@@ -1,0 +1,13 @@
+{
+  "name": "lede-cli",
+  "dependencies": {
+    "minimist": "registry:npm/minimist#1.0.0+20160723033700",
+    "serve-static": "registry:npm/serve-static#1.11.1+20160810053450"
+  },
+  "globalDependencies": {
+    "bunyan": "registry:dt/bunyan#0.0.0+20160412155112",
+    "chokidar": "registry:dt/chokidar#1.4.3+20160316155526",
+    "connect": "registry:dt/connect#3.4.0+20160317120654",
+    "node": "registry:dt/node#6.0.0+20160807145350"
+  }
+}
