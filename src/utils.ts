@@ -19,3 +19,11 @@ export function LoggerFactory({path, logLevel}) {
     ]
   })
 }
+
+export async function asyncMap(Collection: Array<any>, fn: (x: any) => any): Promise<Array<any>> {
+  let returns = [];
+  for (let item of Collection) {
+    returns.push(await fn(item));
+  }
+  return returns;
+}

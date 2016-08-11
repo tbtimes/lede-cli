@@ -2,7 +2,7 @@ import { homedir } from "os";
 import { resolve } from "path";
 import * as minimist from "minimist";
 import { LoggerFactory } from "./utils";
-import { newCommand, lsCommand, cdCommand, devCommand, imageCommand, stageCommand } from "./commands/commands";
+import { newCommand, lsCommand, cdCommand, devCommand, imageCommand } from "./commands/commands";
 
 
 let args = minimist(process.argv.slice(2));
@@ -43,10 +43,10 @@ async function handleCommand(args) {
     case 'images':
       await imageCommand(config);
       break;
-    case 'stage':
-    case 'staging':
-      await stageCommand(config);
-      break;
+    // case 'stage':
+    // case 'staging':
+    //   await stageCommand(config);
+    //   break;
     default:
       console.error(`Command "${command}" not recognized`);
       break;

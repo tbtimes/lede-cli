@@ -5,7 +5,9 @@
     "serve-static": "registry:npm/serve-static#1.11.1+20160810053450"
   },
   "globalDependencies": {
+    "aws-sdk": "registry:dt/aws-sdk#0.0.0+20160805030905",
     "bunyan": "registry:dt/bunyan#0.0.0+20160412155112",
+    "chalk": "registry:dt/chalk#0.4.0+20160317120654",
     "chokidar": "registry:dt/chokidar#1.4.3+20160316155526",
     "connect": "registry:dt/connect#3.4.0+20160317120654",
     "node": "registry:dt/node#6.0.0+20160807145350"
