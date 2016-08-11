@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "description": "A CLI for lede projects",
   "main": "dist/cli.js",
+  "bin": "node dist/cli.js",
   "scripts": {
     "test": "nyc ava",
     "build": "typings install && tsc",
     "dev": "typings install && tsc -w",
     "prepublishOnly": "tsc || npm test"
   },
+  "preferGlobal": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tbtimes/lede-cli.git"
