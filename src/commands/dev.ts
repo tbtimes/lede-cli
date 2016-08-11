@@ -59,7 +59,7 @@ async function createWatcher({lede, projectReport, logger}) {
       .then(projectReport => {
         return createWatcher({lede, projectReport, logger});
       })
-  })
+  });
 
   assetWatcher.on('change', (path, stats) => {
     console.log(`Detected change to ${path}`);

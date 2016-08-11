@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "declaration": true,
+    "outDir": "dist"
+  },
+  "files": [
+    "typings/index.d.ts",
+    "node_modules/lede/dist/index.d.ts",
+    "src/cli.ts",
+    "src/utils.ts",
+    "src/commands/commands.ts",
+    "src/commands/cd.ts",
+    "src/commands/dev.ts",
+    "src/commands/image.ts",
+    "src/commands/ls.ts",
+    "src/commands/new.ts",
+    "src/commands/stage.ts"
+  ]
+}
