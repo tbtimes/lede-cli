@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "A CLI for lede projects",
   "main": "dist/cli.js",
-  "bin": "dist/cli.js",
+  "bin": {
+    "lede": "dist/cli.js"
+  },
   "scripts": {
     "test": "nyc ava",
     "build": "typings install && tsc",
