@@ -8,9 +8,9 @@ import { resolve, basename } from 'path';
 
 export async function lsCommand({workingDir, args, logger}) {
   let projects = await glob("*", {cwd: workingDir});
-  let existingProjects = await asyncMap(projects, async p => {
+  let existingProjects = await asyncMap(projects, async (p) => {
     try {
-      let file: Stats = await stat(resolve(p, 'projectSettings.js'));
+      let file: Stats = await stat(resolve(workingDir, p, 'projectSettings.js'));
       if (file.isFile()) {
         return basename(p)
       } else {

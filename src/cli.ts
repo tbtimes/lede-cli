@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { homedir } from "os";
 import { resolve } from "path";
 import * as minimist from "minimist";
