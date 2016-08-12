@@ -16,6 +16,7 @@
     "src/commands/cd.ts",
     "src/commands/dev.ts",
     "src/commands/image.ts",
+    "src/commands/install.ts",
     "src/commands/ls.ts",
     "src/commands/new.ts",
     "src/commands/stage.ts"
