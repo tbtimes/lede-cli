@@ -9,6 +9,7 @@
   "files": [
     "typings/index.d.ts",
     "node_modules/lede/dist/index.d.ts",
+    "src/npm-scripts/install.ts",
     "src/cli.ts",
     "src/utils.ts",
     "src/commands/commands.ts",

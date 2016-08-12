@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import { Stats } from 'fs';
 import * as glob from 'glob-promise';
 
-import { copydir, write, stat, writeFile } from 'sander';
+import { copydir, stat, writeFile } from 'sander';
 
 
 export async function newCommand({workingDir, args, logger}) {
