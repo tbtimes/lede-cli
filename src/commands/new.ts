@@ -1,7 +1,6 @@
 import { resolve } from 'path';
 import { Stats } from 'fs';
 import * as glob from 'glob-promise';
-import { Repository } from 'nodegit';
 
 import { copydir, stat, writeFile, mkdir } from 'sander';
 import { asyncMap } from "../utils";
@@ -11,7 +10,6 @@ import { spawn } from "child_process";
 export async function newCommand({workingDir, args, logger}) {
   let type = args['_'][0];
   let name = args['_'][1];
-  let contentSrc = args['c'] || args['content'];
 
   if (!type || !name) {
     logger.error(`[type] and [name] are required parameters – you passed ${type} and ${name}`);
@@ -37,7 +35,7 @@ export async function newCommand({workingDir, args, logger}) {
         try {
           logger.info("Creating project ...");
           await copydir(resolve(__dirname, "..", "..", "templates", "project")).to(resolve(pathToCreate));
-          let data = Buffer.from(makeSettings({name, fileId: contentSrc}));
+          let data = Buffer.from(makeSettings({name}));
           await writeFile(resolve(pathToCreate, 'projectSettings.js'), data);
           asyncMap(subDirs, async (dir) => {
             await mkdir(resolve(pathToCreate, dir))
@@ -46,19 +44,10 @@ export async function newCommand({workingDir, args, logger}) {
         } catch(err) {
           logger.err({err}, "There was an error creating the new project");
         }
-        try {
-          logger.info('MAKING REPO');
-          await Repository.init(resolve(workingDir, false));
-          logger.info(`Initialized repository at ${resolve(pathToCreate)}`);
-        } catch (err) {
-          logger.err({err}, `Error initializing repository at ${resolve(pathToCreate)}`);
-        }
 
-        console.log("Installing dependencies ... this may take a few minutes");
+        logger.info("Installing dependencies ... this may take a few minutes");
 
-        const npminiter = spawn("npm", ['init', '-f']);
-        npminiter.stdout.pipe(process.stdout);
-        npminiter.stderr.pipe(process.stderr);
+        const npminiter = spawn("npm", ['init', '-f'], { cwd: pathToCreate });
 
         const installer = spawn("npm", ["install", "lede", "slug", '--save'], { cwd: pathToCreate });
         installer.stdout.pipe(process.stdout);
@@ -89,7 +78,7 @@ export async function newCommand({workingDir, args, logger}) {
   }
 }
 
-function makeSettings({name, fileId}) {
+function makeSettings({name}) {
   return `
 class SettingsConfig {
   constructor() {
@@ -99,7 +88,6 @@ class SettingsConfig {
     this.scripts = [];
     this.assets = [];
     this.blocks = ["ARTICLE"];
-    this.googleFileId = ${fileId ? `"${fileId}"`: ""}
   }
 }
 
