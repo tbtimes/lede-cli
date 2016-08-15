@@ -7,10 +7,7 @@
     "lede": "dist/cli.js"
   },
   "scripts": {
-    "test": "nyc ava",
-    "build": "typings install && tsc",
-    "dev": "typings install && tsc -w",
-    "prepublishOnly": "tsc || npm test"
+    "install": "node dist/npm-scripts/install.ts"
   },
   "preferGlobal": true,
   "repository": {
