@@ -6,15 +6,28 @@ import { Stats } from 'fs';
 import { stat } from 'sander';
 import { resolve, basename } from 'path';
 
-import { Lede, FileSystemDeployer, Es6Compiler, NunjucksCompiler, SassCompiler} from 'lede';
-
 
 export async function devCommand({workingDir, args, logger}) {
   let name = args['n'] || args['name'] || basename(process.cwd());
   let port = args['x'] || args['port'] || 8000;
+  let localLedePath = resolve(workingDir, name, "node_modules", "lede", "dist", "index.js");
+
+  let Lede, FileSystemDeployer, Es6Compiler, NunjucksCompiler, SassCompiler;
+
+  try {
+    Lede = require(localLedePath).Lede;
+    FileSystemDeployer = require(localLedePath).FileSystemDeployer;
+    Es6Compiler = require(localLedePath).Es6Compiler;
+    NunjucksCompiler = require(localLedePath).NunjucksCompiler;
+    SassCompiler = require(localLedePath).SassCompiler;
+  } catch (err) {
+    logger.error({err}, "There was an error loading lede. Make sure you have it locally installed.");
+    process.exit(1);
+  }
+
   let {servePath, buildPath} = await getPaths({workingDir, name, logger});
   let compilerConfigPath = resolve(workingDir, name, "compilerConfig.js");
-  let compilers = await getCompilers(compilerConfigPath, logger);
+  let compilers = await getCompilers({compilerConfigPath, logger, Es6Compiler, NunjucksCompiler, SassCompiler});
   let lede = new Lede(buildPath, compilers, {dev: new FileSystemDeployer(servePath)}, logger);
   let fileServer = connect();
   let lrServer = livereload.createServer();
@@ -68,7 +81,7 @@ async function createWatcher({lede, projectReport, logger}) {
   })
 }
 
-export async function getCompilers(compilerConfigPath, logger) {
+export async function getCompilers({compilerConfigPath, logger, NunjucksCompiler, Es6Compiler, SassCompiler}) {
   let compilerConfig = null;
   try {
     compilerConfig = require(compilerConfigPath);

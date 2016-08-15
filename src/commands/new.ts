@@ -5,6 +5,7 @@ import { Repository } from 'nodegit';
 
 import { copydir, stat, writeFile, mkdir } from 'sander';
 import { asyncMap } from "../utils";
+import { spawn } from "child_process";
 
 
 export async function newCommand({workingDir, args, logger}) {
@@ -52,6 +53,17 @@ export async function newCommand({workingDir, args, logger}) {
           logger.err({err}, `Error initializing repository at ${resolve(pathToCreate)}`);
         }
       }
+
+      console.log("Installing dependencies ... this may take a few minutes");
+
+      const npminiter = spawn("npm", ['init', '-f']);
+      npminiter.stdout.pipe(process.stdout);
+      npminiter.stderr.pipe(process.stderr);
+
+      const installer = spawn("npm", ["install", "lede", "slug", '--save'], { cwd: pathToCreate });
+      installer.stdout.pipe(process.stdout);
+      installer.stderr.pipe(process.stderr);
+
       break;
     case 'bit':
       try {

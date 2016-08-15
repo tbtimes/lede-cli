@@ -3,7 +3,6 @@ import { resolve } from "path";
 import { createReadStream, renameSync } from "fs";
 import { asyncMap } from "../utils";
 import * as glob from 'glob-promise';
-import { DependencyAssembler } from "lede";
 
 const jpgExtensions = ["jpeg", "jpg", "JPG", "JPEG"];
 const pngExtensions = ["png", "PNG"];
@@ -14,6 +13,15 @@ export async function imageCommand({workingDir, args, logger}) {
   let mugs = await glob(`*.{${allExtensions.join(',')}}`, {cwd: resolve(process.cwd(), "images", "mugs")});
   let Bucket = args['b'] || args['bucket'] || "ledejs";
   let clobber = args['c'] || args['clobber'] || false;
+  let localLedePath = resolve(process.cwd(), "node_modules", "lede", "dist", "index.js");
+  let DependencyAssembler;
+
+  try {
+    DependencyAssembler = require(localLedePath).DependencyAssembler;
+  } catch (err) {
+    logger.error({err}, "There was an error loading lede. Make sure you have it locally installed.");
+    process.exit(1);
+  }
 
   // NORMALIZE FILE EXTENSIONS TO LOWERCASE
   mugs = await lowerCaseExtention({rawImages: mugs, logger, basePath: resolve(process.cwd(), "images", "mugs")});
