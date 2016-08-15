@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { Stats } from 'fs';
 import * as glob from 'glob-promise';
+import { Repository } from 'nodegit';
 
 import { copydir, stat, writeFile } from 'sander';
 
@@ -31,6 +32,12 @@ export async function newCommand({workingDir, args, logger}) {
           logger.info(`Created ${resolve(workingDir, name)}`);
         } catch(err) {
           logger.err({err}, "There was an error creating the new project");
+        }
+        try {
+          await Repository.init(resolve(workingDir, false));
+          logger.info(`Initialized repository at ${resolve(workingDir, name)}`);
+        } catch (err) {
+          logger.err({err}, `Error initializing repository at ${resolve(workingDir, name)}`);
         }
       }
       break;
