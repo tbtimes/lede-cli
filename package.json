@@ -31,7 +31,6 @@
     "chokidar": "^1.6.0",
     "connect": "^3.4.1",
     "glob-promise": "^1.0.6",
-    "lede": "^0.0.17",
     "livereload": "^0.5.0",
     "minimist": "^1.2.0",
     "nodegit": "^0.14.1",

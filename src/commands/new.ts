@@ -47,22 +47,23 @@ export async function newCommand({workingDir, args, logger}) {
           logger.err({err}, "There was an error creating the new project");
         }
         try {
+          logger.info('MAKING REPO');
           await Repository.init(resolve(workingDir, false));
           logger.info(`Initialized repository at ${resolve(pathToCreate)}`);
         } catch (err) {
           logger.err({err}, `Error initializing repository at ${resolve(pathToCreate)}`);
         }
+
+        console.log("Installing dependencies ... this may take a few minutes");
+
+        const npminiter = spawn("npm", ['init', '-f']);
+        npminiter.stdout.pipe(process.stdout);
+        npminiter.stderr.pipe(process.stderr);
+
+        const installer = spawn("npm", ["install", "lede", "slug", '--save'], { cwd: pathToCreate });
+        installer.stdout.pipe(process.stdout);
+        installer.stderr.pipe(process.stderr);
       }
-
-      console.log("Installing dependencies ... this may take a few minutes");
-
-      const npminiter = spawn("npm", ['init', '-f']);
-      npminiter.stdout.pipe(process.stdout);
-      npminiter.stderr.pipe(process.stderr);
-
-      const installer = spawn("npm", ["install", "lede", "slug", '--save'], { cwd: pathToCreate });
-      installer.stdout.pipe(process.stdout);
-      installer.stderr.pipe(process.stderr);
 
       break;
     case 'bit':
