@@ -13,7 +13,7 @@ export async function devCommand({workingDir, args, logger}) {
   let name = args['n'] || args['name'] || basename(process.cwd());
   let port = args['x'] || args['port'] || 8000;
   let {servePath, buildPath} = await getPaths({workingDir, name, logger});
-  let compilerConfigPath = resolve(workingDir, "compilers", "compilerConfig.js");
+  let compilerConfigPath = resolve(workingDir, name, "compilerConfig.js");
   let compilers = await getCompilers(compilerConfigPath, logger);
   let lede = new Lede(buildPath, compilers, {dev: new FileSystemDeployer(servePath)}, logger);
   let fileServer = connect();

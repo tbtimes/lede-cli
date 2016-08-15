@@ -3,7 +3,8 @@ import { Stats } from 'fs';
 import * as glob from 'glob-promise';
 import { Repository } from 'nodegit';
 
-import { copydir, stat, writeFile } from 'sander';
+import { copydir, stat, writeFile, mkdir } from 'sander';
+import { asyncMap } from "../utils";
 
 
 export async function newCommand({workingDir, args, logger}) {
@@ -19,6 +20,14 @@ export async function newCommand({workingDir, args, logger}) {
   switch (type.toLowerCase()) {
     case 'project':
       let pathToCreate = resolve(workingDir, name);
+      let subDirs = [
+        resolve('images','fullscreen'),
+        resolve('images','mugs'),
+        'assets',
+        'scripts',
+        'bits',
+        'blocks'
+      ];
       let paths = await glob('*', {cwd: workingDir});
       if (paths.indexOf(pathToCreate) > -1) {
         logger.error(`${name} already exists. Use 'lede ls' to see all projects.`);
@@ -26,18 +35,21 @@ export async function newCommand({workingDir, args, logger}) {
       } else {
         try {
           logger.info("Creating project ...");
-          await copydir(resolve(__dirname, "..", "..", "templates", "project")).to(resolve(workingDir, name));
+          await copydir(resolve(__dirname, "..", "..", "templates", "project")).to(resolve(pathToCreate));
           let data = Buffer.from(makeSettings({name, fileId: contentSrc}));
-          await writeFile(resolve(workingDir, name, 'projectSettings.js'), data);
-          logger.info(`Created ${resolve(workingDir, name)}`);
+          await writeFile(resolve(pathToCreate, 'projectSettings.js'), data);
+          asyncMap(subDirs, async (dir) => {
+            await mkdir(resolve(pathToCreate, dir))
+          });
+          logger.info(`Created ${resolve(pathToCreate)}`);
         } catch(err) {
           logger.err({err}, "There was an error creating the new project");
         }
         try {
           await Repository.init(resolve(workingDir, false));
-          logger.info(`Initialized repository at ${resolve(workingDir, name)}`);
+          logger.info(`Initialized repository at ${resolve(pathToCreate)}`);
         } catch (err) {
-          logger.err({err}, `Error initializing repository at ${resolve(workingDir, name)}`);
+          logger.err({err}, `Error initializing repository at ${resolve(pathToCreate)}`);
         }
       }
       break;
