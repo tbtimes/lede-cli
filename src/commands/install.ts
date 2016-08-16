@@ -1,6 +1,6 @@
 import { dir } from "tmp";
 import { resolve, basename } from "path";
-import { Clone } from "nodegit";
+import { Clone, Cred } from "nodegit";
 import { Stats } from "fs";
 import { copydir, stat } from "sander";
 import * as glob from 'glob-promise';
@@ -11,6 +11,20 @@ export async function installCommand({workingDir, logger, args}) {
   const module: string = args['_'][0] || (logger.error("No installable module specified.") && process.exit(1));
   const moduleRegex = new RegExp("(.+):(.+)");
   const [_, manager, repository] = module.match(moduleRegex);
+  const cloneOpts = {
+    fetchOpts: {
+      callbacks: {
+        credentials: function() {
+          return Cred.userpassPlaintextNew(process.env.GH_TOKEN, "x-oauth-basic")
+        }
+      }
+    }
+  };
+
+  // Patch certificate checks on mac http://www.nodegit.org/guides/cloning/gh-two-factor/
+  if (process.platform === "darwin") {
+    cloneOpts.fetchOpts.callbacks.certificateCheck = function() { return 1; }
+  }
 
   switch (manager) {
     case 'gh':
@@ -25,7 +39,7 @@ export async function installCommand({workingDir, logger, args}) {
       logger.info(`Cloning https://github.com/${repository}`);
       let repo;
       try {
-        repo = await Clone(`https://github.com/${repository}`, tmpPath);
+        repo = await Clone(`https://github.com/${repository}`, tmpPath, cloneOpts);
       } catch (err) {
         logger.error({err}, `Error cloning https://github.com/${repository}`);
         process.exit(1);
