@@ -75,9 +75,14 @@ async function createWatcher({lede, projectReport, logger}) {
   });
 
   assetWatcher.on('change', (path, stats) => {
-    console.log(`Detected change to ${path}`);
+    logger.info(`Detected change to ${path}`);
+    assetWatcher.close();
+    configWatcher.close();
     delete require.cache[require.resolve(path)];
     lede.deploy("dev", true, projectReport)
+      .then(projectReport => {
+        return createWatcher({lede, projectReport, logger})
+      });
   })
 }
 
