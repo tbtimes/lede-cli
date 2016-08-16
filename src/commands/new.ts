@@ -4,7 +4,7 @@ import * as glob from 'glob-promise';
 
 import { copydir, stat, writeFile, mkdir } from 'sander';
 import { asyncMap } from "../utils";
-import { spawn } from "child_process";
+const spawn = require('cross-spawn');
 
 
 export async function newCommand({workingDir, args, logger}) {
@@ -38,6 +38,7 @@ export async function newCommand({workingDir, args, logger}) {
           let data = Buffer.from(makeSettings({name}));
           await writeFile(resolve(pathToCreate, 'projectSettings.js'), data);
           asyncMap(subDirs, async (dir) => {
+            logger.info(`Making ${resolve(pathToCreate, dir)}`);
             await mkdir(resolve(pathToCreate, dir))
           });
           logger.info(`Created ${resolve(pathToCreate)}`);
