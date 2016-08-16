@@ -4,6 +4,7 @@ import * as glob from 'glob-promise';
 
 import { copydir, stat, writeFile, mkdir } from 'sander';
 import { asyncMap } from "../utils";
+import { basename } from "path";
 const spawn = require('cross-spawn');
 
 
@@ -20,33 +21,38 @@ export async function newCommand({workingDir, args, logger}) {
     case 'project':
       let pathToCreate = resolve(workingDir, name);
       let subDirs = [
-        resolve('images','fullscreen'),
-        resolve('images','mugs'),
-        'assets',
-        'scripts',
-        'bits',
-        'blocks'
+        resolve(pathToCreate, 'images','fullscreen'),
+        resolve(pathToCreate, 'images','mugs'),
+        resolve(pathToCreate, 'assets'),
+        resolve(pathToCreate, 'scripts'),
+        resolve(pathToCreate, 'bits'),
+        resolve(pathToCreate, 'blocks')
       ];
       let paths = await glob('*', {cwd: workingDir});
-      if (paths.indexOf(pathToCreate) > -1) {
+      if (paths.indexOf(basename(pathToCreate)) > -1) {
         logger.error(`${name} already exists. Use 'lede ls' to see all projects.`);
         break;
       } else {
+        let dirsCreated;
         try {
           logger.info("Creating project ...");
           await copydir(resolve(__dirname, "..", "..", "templates", "project")).to(resolve(pathToCreate));
           let data = Buffer.from(makeSettings({name}));
           await writeFile(resolve(pathToCreate, 'projectSettings.js'), data);
-          asyncMap(subDirs, async (dir) => {
-            logger.info(`Making ${resolve(pathToCreate, dir)}`);
-            await mkdir(resolve(pathToCreate, dir))
-          });
           logger.info(`Created ${resolve(pathToCreate)}`);
+          dirsCreated = await asyncMap(subDirs, async (dir) => {
+            logger.info(`Making ${resolve(pathToCreate, dir)}`);
+            await mkdir(resolve(pathToCreate, dir));
+            return true;
+          });
         } catch(err) {
           logger.err({err}, "There was an error creating the new project");
         }
 
-        logger.info("Installing dependencies ... this may take a few minutes");
+        if (dirsCreated) {
+          logger.info("Installing dependencies ... this may take a few minutes");
+        }
+
 
         const npminiter = spawn("npm", ['init', '-f'], { cwd: pathToCreate });
 
