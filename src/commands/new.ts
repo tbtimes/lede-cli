@@ -26,7 +26,8 @@ export async function newCommand({workingDir, args, logger}) {
         resolve(pathToCreate, 'assets'),
         resolve(pathToCreate, 'scripts'),
         resolve(pathToCreate, 'bits'),
-        resolve(pathToCreate, 'blocks')
+        resolve(pathToCreate, 'blocks'),
+        resolve(pathToCreate, 'styles')
       ];
       let paths = await glob('*', {cwd: workingDir});
       if (paths.indexOf(basename(pathToCreate)) > -1) {
