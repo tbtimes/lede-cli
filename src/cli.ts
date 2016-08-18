@@ -3,7 +3,7 @@ import { homedir } from "os";
 import { resolve } from "path";
 import * as minimist from "minimist";
 import { LoggerFactory } from "./utils";
-import { newCommand, lsCommand, cdCommand, devCommand, imageCommand, installCommand } from "./commands/commands";
+import { newCommand, lsCommand, cdCommand, devCommand, imageCommand, installCommand, buildCommand } from "./commands/commands";
 
 
 let args = minimist(process.argv.slice(2));
@@ -46,6 +46,9 @@ async function handleCommand(args) {
       break;
     case 'install':
       await installCommand(config);
+      break;
+    case 'build':
+      await buildCommand(config);
       break;
     // case 'stage':
     // case 'staging':
