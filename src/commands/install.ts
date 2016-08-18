@@ -31,7 +31,7 @@ export async function installCommand({workingDir, logger, args}) {
     case 'github':
       let tmpPath, cleanupCallback;
       try {
-        [tmpPath, cleanupCallback] = await tmpProm({unsafeCleanup: true});
+        tmpPath = await tmpProm({unsafeCleanup: true});
       } catch (err) {
         logger.error({err}, "There was an error creating temporary directory.");
         process.exit(1);
@@ -120,7 +120,7 @@ function tmpProm(options) {
       if (err) {
         return reject(err);
       }
-      return resolve(args);
+      return resolve(args[0]);
     });
   });
 }

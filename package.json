@@ -7,7 +7,8 @@
     "lede": "dist/cli.js"
   },
   "scripts": {
-    "install": "node dist/npm-scripts/install.js"
+    "install": "node dist/npm-scripts/install.js",
+    "prepublishOnly": "gulp source"
   },
   "preferGlobal": true,
   "repository": {
@@ -21,6 +22,10 @@
   },
   "homepage": "https://github.com/tbtimes/lede-cli#readme",
   "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.13.6",
+    "gulp-watch": "^4.3.9",
     "typescript": "^1.8.10",
     "typings": "^1.3.2"
   },

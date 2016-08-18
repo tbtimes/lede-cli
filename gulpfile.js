@@ -1,8 +1,6 @@
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const watch = require('gulp-watch');
-const typedoc = require('gulp-typedoc');
-const chmod = require('gulp-chmod');
 const srcmap = require('gulp-sourcemaps');
 const path = require('path');
 
@@ -20,19 +18,6 @@ gulp.task('source', () => {
     .pipe(ts(projectOpts));
 
   result.js
-    .pipe(chmod({
-      owner: {
-        read: true,
-        write: true,
-        execute: true
-      },
-      group: {
-        execute: true
-      },
-      others: {
-        execute: true
-      }
-    }))
     .pipe(srcmap.write({sourceRoot: path.resolve(__dirname, "src")}))
     .pipe(gulp.dest('dist/'))
 });
