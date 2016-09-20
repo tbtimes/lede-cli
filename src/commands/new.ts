@@ -71,7 +71,7 @@ export async function newCommand({workingDir, args, logger}) {
         process.exit(1);
       }
       try {
-        const bitPath = resolve(workingDir, "bits");
+        const bitPath = resolve(workingDir, "bits", name);
         await sander.writeFile(resolve(bitPath, `${name}.bitSettings.js`), bitSettings({name}));
         await sander.writeFile(resolve(bitPath, `${name}.js`), "");
         await sander.writeFile(resolve(bitPath, `${name}.scss`), "");

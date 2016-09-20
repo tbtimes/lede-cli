@@ -19,7 +19,7 @@ async function handleCommand(args) {
 
   let config = {
     gapiKey: process.env.GAPI_KEY,
-    workingDir: findProjectSettings(process.cwd()),
+    workingDir: await findProjectSettings(process.cwd()),
     args,
     logger
   };
