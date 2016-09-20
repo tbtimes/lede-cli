@@ -1,8 +1,8 @@
 import { resolve } from 'path';
 import { Stats } from 'fs';
 import * as glob from 'glob-promise';
+const sander = require("sander");
 
-import { copydir, stat, writeFile, mkdir } from 'sander';
 import { asyncMap } from "../utils";
 import { basename } from "path";
 const spawn = require('cross-spawn');
@@ -19,7 +19,7 @@ export async function newCommand({workingDir, args, logger}) {
 
   switch (type.toLowerCase()) {
     case 'project':
-      let pathToCreate = resolve(workingDir, name);
+      let pathToCreate = resolve(process.cwd(), name);
       let subDirs = [
         resolve(pathToCreate, 'images','fullscreen'),
         resolve(pathToCreate, 'images','mugs'),
@@ -31,21 +31,21 @@ export async function newCommand({workingDir, args, logger}) {
       ];
       let paths = await glob('*', {cwd: workingDir});
       if (paths.indexOf(basename(pathToCreate)) > -1) {
-        logger.error(`${name} already exists. Use 'lede ls' to see all projects.`);
+        logger.error(`${name} already exists.`);
         break;
       } else {
         let dirsCreated;
         try {
+
           logger.info("Creating project ...");
-          await copydir(resolve(__dirname, "..", "..", "templates", "project")).to(resolve(pathToCreate));
-          let data = Buffer.from(makeSettings({name}));
-          await writeFile(resolve(pathToCreate, 'projectSettings.js'), data);
-          logger.info(`Created ${resolve(pathToCreate)}`);
-          dirsCreated = await asyncMap(subDirs, async (dir) => {
-            logger.info(`Making ${resolve(pathToCreate, dir)}`);
-            await mkdir(resolve(pathToCreate, dir));
-            return true;
+          await sander.writeFile(resolve(pathToCreate, `${name}.projectSettings.js`), projectSettings({name}));
+          logger.info(`Created ${resolve(pathToCreate, `${name}.projectSettings.js`)}`);
+          asyncMap(subDirs, async(dir) => {
+            logger.info(`making ${resolve(pathToCreate, dir)}`);
+            await sander.mkdir(resolve(pathToCreate, dir));
+            return true
           });
+          await sander.writeFile(resolve(pathToCreate, ".gitignore"), gitignore());
         } catch(err) {
           logger.err({err}, "There was an error creating the new project");
         }
@@ -54,48 +54,80 @@ export async function newCommand({workingDir, args, logger}) {
           logger.info("Installing dependencies ... this may take a few minutes");
         }
 
-
         const npminiter = spawn("npm", ['init', '-f'], { cwd: pathToCreate });
+        npminiter.stdout.pipe(process.stdout);
+        npminiter.stderr.pipe(process.stderr);
 
-        const installer = spawn("npm", ["install", "lede", "slug", '--save'], { cwd: pathToCreate });
+        const installer = spawn("npm", ["install", "lede@next", "slug", '--save'], { cwd: pathToCreate });
         installer.stdout.pipe(process.stdout);
         installer.stderr.pipe(process.stderr);
       }
 
       break;
+
     case 'bit':
+      if (workingDir === "NONE") {
+        logger.error("Could not find a projectSettings file");
+        process.exit(1);
+      }
       try {
-        let status: Stats = await stat(resolve(process.cwd(), 'projectSettings.js'));
-        if (status.isFile()) {
-          try {
-            await copydir(resolve(__dirname, '..', '..', 'templates', 'bit')).to(resolve(process.cwd(), 'bits', name));
-          } catch (err) {
-            logger.error({err}, `There was an error copying bit template.`)
-          }
-        }
-      } catch(err) {
-        if (err.code !== 'ENOENT') {
-          logger.error({err}, `An error occurred while accessing ${resolve(process.cwd(), 'projectSettings.js')}`);
-        } else {
-          logger.error(`lede new bit [name] should be run from inside a Lede Project.`)
-        }
+        const bitPath = resolve(workingDir, "bits");
+        await sander.writeFile(resolve(bitPath, `${name}.bitSettings.js`), bitSettings({name}));
+        await sander.writeFile(resolve(bitPath, `${name}.js`), "");
+        await sander.writeFile(resolve(bitPath, `${name}.scss`), "");
+        await sander.writeFile(resolve(bitPath, `${name}.html`), "");
+        logger.info(`Created new bit at ${resolve(workingDir, "bits", `${name}.bitSettings.js`)}`);
+      } catch (err) {
+        logger.error({err}, `An error occurred while creating bit ${name}`);
       }
       break;
+
+    case 'block':
+      if (workingDir === "NONE") {
+        logger.error("Could not find a projectSettings file");
+        process.exit(1);
+      }
+
+      try {
+        await sander.writeFile(resolve(workingDir, "blocks", `${name}.blockSettings.js`), blockSettings());
+        logger.info(`Created new block at ${resolve(workingDir, "blocks", `${name}.blockSettings.js`)}`);
+      } catch (err) {
+        logger.error({err}, `An error occurred while creating block ${name}`);
+        process.exit(1);
+      }
+      break;
+
+    case 'page':
+      if (workingDir === "NONE") {
+        logger.error("Could not find a projectSettings file");
+        process.exit(1);
+      }
+
+      try {
+        await sander.writeFile(resolve(workingDir, "pages", `${name}.pageSettings.js`), pageSettings({name}));
+        logger.info(`Created new page at ${resolve(workingDir, "pages", `${name}.pageSettings.js`)}`);
+      } catch (err) {
+        logger.error({err}, `An error occurred while creating page ${name}`);
+        process.exit(1);
+      }
+      break;
+
     default:
       logger.error(`${type} is not a valid [type] param.`)
   }
 }
 
-function makeSettings({name}) {
+function projectSettings({name}: {name: string}) {
   return `
 class SettingsConfig {
   constructor() {
-    this.name = "${name}";
-    this.dependsOn = ["core"];
-    this.styles = [];
-    this.scripts = [];
-    this.assets = [];
-    this.blocks = ["ARTICLE"];
+    this.deployRoot = "${name}";
+    this.defaults = {
+      materials: [],
+      blocks: [],
+      metaTags: []
+    };
+    this.context = { foo: "bar" };
   }
 }
 
@@ -103,5 +135,84 @@ class SettingsConfig {
 // These two lines are necessary for lede to pull in this module at runtime.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SettingsConfig;
-`
+`;
+}
+
+function bitSettings({name}: {name: string}) {
+  return `
+const join = require("path").join;
+
+class SettingsConfig {
+  constructor() {
+    this.version = 0;
+    this.context = { foo: "bar" };
+    this.script = join(__dirname, "${name}.js");
+    this.style = join(__dirname, "${name}.scss");
+    this.html = join(__dirname, "${name}.html");
+  }
+}
+
+// DO NOT CHANGE ANYTHING BELOW THIS LINE
+// These two lines are necessary for lede to pull in this module at runtime.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SettingsConfig;
+`;
+}
+
+function blockSettings() {
+  return `
+const lede = require("lede");
+
+const resolver = new lede.resolvers.AmlResolver("GOOGLEDOC ID GOES HERE", process.env.GAPI_KEY)
+
+class SettingsConfig {
+  constructor() {
+    this.source = resolver;
+  }
+}
+
+// DO NOT CHANGE ANYTHING BELOW THIS LINE
+// These two lines are necessary for lede to pull in this module at runtime.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SettingsConfig;
+`;
+}
+
+function pageSettings({name}: {name: string}) {
+  return `
+const resolve = require("path").resolve;
+
+class SettingsConfig {
+  constructor() {
+    this.deployPath = "${name}";
+    this.blocks = [];
+    this.materials = {
+      scripts: [],
+      styles: [],
+      assets: []
+    };
+    this.resources = {
+      head: [],
+      body: []
+    };
+    this.meta = [];
+    this.seo = {
+      title: "This is a page for ${name}"
+    };
+  }
+}
+
+// DO NOT CHANGE ANYTHING BELOW THIS LINE
+// These two lines are necessary for lede to pull in this module at runtime.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SettingsConfig;
+`;
+}
+
+function gitignore() {
+  return `
+node_modules
+.ledeCache
+.idea
+`;
 }

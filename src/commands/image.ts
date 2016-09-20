@@ -9,59 +9,43 @@ const pngExtensions = ["png", "PNG"];
 const allExtensions = jpgExtensions.concat(pngExtensions);
 
 export async function imageCommand({workingDir, args, logger}) {
-  let fullscreens = await glob(`*.{${allExtensions.join(',')}}`, {cwd: resolve(process.cwd(), "images", "fullscreen")});
-  let mugs = await glob(`*.{${allExtensions.join(',')}}`, {cwd: resolve(process.cwd(), "images", "mugs")});
-  let Bucket = args['b'] || args['bucket'] || "ledejs";
-  let clobber = args['c'] || args['clobber'] || false;
-  let localLedePath = resolve(process.cwd(), "node_modules", "lede", "dist", "index.js");
-  let DependencyAssembler;
-
-  try {
-    DependencyAssembler = require(localLedePath).DependencyAssembler;
-  } catch (err) {
-    logger.error({err}, "There was an error loading lede. Make sure you have it locally installed.");
+  if (workingDir === "NONE") {
+    logger.error(`Could not find projectSettings file`);
     process.exit(1);
   }
+  let fullscreens = await glob(`*.{${allExtensions.join(",")}}`, {cwd: resolve(workingDir, "images", "fullscreen")});
+  let mugs = await glob(`*.{${allExtensions.join(",")}}`, {cwd: resolve(workingDir, "images", "fullscreen")});
+  const Bucket = args['b'] || args["bucket"] || "ledejs";
+  const clobber = args["c"] || args["clobber"] || false;
+  const localLedePath = resolve(workingDir, "node_modules", "lede", "dist", "index.js");
 
-  // NORMALIZE FILE EXTENSIONS TO LOWERCASE
-  mugs = await lowerCaseExtention({rawImages: mugs, logger, basePath: resolve(process.cwd(), "images", "mugs")});
-  fullscreens = await lowerCaseExtention({rawImages: fullscreens, logger, basePath: resolve(process.cwd(), "images", "fullscreen")});
+  mugs = await lowerCaseExtension({rawImages: mugs, logger, basePath: resolve(workingDir, "images", "mugs")});
+  fullscreens = await lowerCaseExtension({rawImages: fullscreens, logger, basePath: resolve(workingDir, "images", "fullscreen")});
 
-  let settings = null;
-  try {
-    settings = await DependencyAssembler.gatherSettings(process.cwd());
-  } catch (err) {
-    logger.error({err}, "An error occurred while reading projectSettings.js");
-    process.exit(1);
-  }
-  let projName = settings.name;
+  const settingsFile = (await glob('*.projectSettings.js', { cwd: workingDir }))[0];
+  const projName = settingsFile.match(/(.*?)\.projectSettings.js/)[1];
 
   // Check if any of the images exist on s3 so we don't needlessly wrack up charges :) you're welcome
   if (!clobber) {
     try {
       mugs = await getImagesNotOnS3({Bucket, paths: mugs, logger, Key: `mugs/${projName}/`});
-    } catch (err) {
-      logger.error({err}, "An error occurred while checking for existing images on s3.");
-    }
-
-    try {
-      fullscreens = await getImagesNotOnS3({Bucket, paths: fullscreens, logger, Key: `fullscreen/${projName}/`});
+      fullscreens = await getImagesNotOnS3({Bucket, paths: fullscreens, logger, Key: `fullscreen/${projName}/`})
     } catch (err) {
       logger.error({err}, "An error occurred while checking for existing images on s3.");
     }
   }
 
-  // GET KEY'S FOR S3 AND PATHS FOR UPLOADING
+  // GET KEYS FOR S3 AND PATHS FOR UPLOADING
   let mugPaths = mugs.map(p => {
     return {
       Key: `mugs/${projName}/${p}`,
-      path: resolve(process.cwd(), "images", "mugs", p)
+      path: resolve(workingDir, "images", "mugs", p)
     }
   });
   let fullscreenPaths = fullscreens.map(p => {
     return {
       Key: `fullscreen/${projName}/${p}`,
-      path: resolve(process.cwd(), "images", "fullscreen", p)
+      path: resolve(workingDir, "images", "fullscreen", p)
     }
   });
 
@@ -69,18 +53,14 @@ export async function imageCommand({workingDir, args, logger}) {
   try {
     await uploadImagesToS3({Bucket, logger, images: mugPaths});
     logger.info("Successfully uploaded all mugshots. It may take up to a minute before the resized images are available.")
-  } catch(err) {
-    logger.error({err}, "An error occurred while uploading mugshots to s3.");
-  }
-  try {
     await uploadImagesToS3({Bucket, logger, images: fullscreenPaths});
     logger.info("Successfully uploaded all fullscreen images. It may take up to a minute before the resized images are available.")
-  } catch (err) {
-    logger.error({err}, "An error occurred while uploading fullscreen images to s3.");
+  } catch(err) {
+    logger.error({err}, "An error occurred while uploading images to s3.");
   }
 }
 
-async function lowerCaseExtention({rawImages, basePath, logger}) {
+async function lowerCaseExtension({rawImages, basePath, logger}) {
   return await asyncMap(rawImages, (path) => {
     let parts = path.split('.');
     let newPath = "";
@@ -97,9 +77,7 @@ async function lowerCaseExtention({rawImages, basePath, logger}) {
       path = resolve(basePath, path);
       newPath = resolve(basePath, newPath);
       logger.info(`Renaming ${path} to ${newPath}`);
-
       renameSync(path, newPath);
-
       return toReturn;
     } else {
       return path;
