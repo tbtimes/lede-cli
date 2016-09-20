@@ -4,7 +4,7 @@ import { resolve, sep } from "path";
 import * as glob from "glob";
 import * as minimist from "minimist";
 import { LoggerFactory } from "./utils";
-import { newCommand devCommand, imageCommand } from "./commands/commands";
+import { newCommand, devCommand, imageCommand } from "./commands/commands";
 
 const rootPath = (platform() === "win32") ? process.cwd().split(sep)[0] : "/";
 let args = minimist(process.argv.slice(2));

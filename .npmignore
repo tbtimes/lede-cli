@@ -111,3 +111,8 @@ fabric.properties
 
 src
 .idea
+gulpfile.js
+README.md
+typings
+typings.json
+tsconfig.json

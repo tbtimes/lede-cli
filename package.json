@@ -7,7 +7,6 @@
     "lede": "dist/cli.js"
   },
   "scripts": {
-    "install": "node dist/npm-scripts/install.js",
     "prepublishOnly": "gulp source"
   },
   "preferGlobal": true,
