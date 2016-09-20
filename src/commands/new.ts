@@ -1,5 +1,4 @@
 import { resolve } from 'path';
-import { Stats } from 'fs';
 import * as glob from 'glob-promise';
 const sander = require("sander");
 
@@ -32,7 +31,7 @@ export async function newCommand({workingDir, args, logger}) {
         resolve(pathToCreate, 'styles')
       ];
       let paths = await glob('*', {cwd: workingDir});
-      if (paths.indexOf(basename(pathToCreate)) > -1) {
+      if (! inline && paths.indexOf(basename(pathToCreate)) > -1) {
         logger.error(`${name} already exists.`);
         break;
       } else {
@@ -59,10 +58,11 @@ export async function newCommand({workingDir, args, logger}) {
         const npminiter = spawn("npm", ['init', '-f'], { cwd: pathToCreate });
         npminiter.stdout.pipe(process.stdout);
         npminiter.stderr.pipe(process.stderr);
-
-        const installer = spawn("npm", ["install", "lede@next", "slug", '--save'], { cwd: pathToCreate });
-        installer.stdout.pipe(process.stdout);
-        installer.stderr.pipe(process.stderr);
+        npminiter.on("close", () => {
+          const installer = spawn("npm", ["install", "lede@next", "slug", '--save'], { cwd: pathToCreate });
+          installer.stdout.pipe(process.stdout);
+          installer.stderr.pipe(process.stderr);
+        });
       }
 
       break;
