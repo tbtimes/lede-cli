@@ -32,14 +32,12 @@ export async function devCommand({workingDir, args, logger}) {
 
   const initialReport = await projectDirector.buildReport();
 
-  createWatcher({projectDirector, projectReport: initialReport, logger});
-  logger.info(`Serving at localhost:${port}/`);
+  createWatcher({projectDirector, projectReport: initialReport, logger, port});
   lrServer.watch(servePath);
   fileServer.listen(port);
-
 }
 
-async function createWatcher({projectDirector, projectReport, logger}) {
+async function createWatcher({projectDirector, projectReport, logger, port}) {
   const files = await glob("**/*", {cwd: projectReport.workingDir});
   const watcher = watch(files, {
     persistent: true
@@ -51,9 +49,10 @@ async function createWatcher({projectDirector, projectReport, logger}) {
     logger.info(`Detected change to ${path}`);
     projectDirector.buildReport()
       .then(r => {
-        return createWatcher({projectDirector, projectReport: r, logger})
+        return createWatcher({projectDirector, projectReport: r, logger, port})
       })
   });
 
   await projectDirector.compile(projectReport);
+  logger.info(`Serving at localhost:${port}/`);
 }
