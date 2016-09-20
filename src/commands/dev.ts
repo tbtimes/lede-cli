@@ -39,7 +39,7 @@ export async function devCommand({workingDir, args, logger}) {
 
 async function createWatcher({projectDirector, projectReport, logger, port}) {
   const files = await glob("**/*", {cwd: projectReport.workingDir});
-  const watcher = watch(files, {
+  const watcher = watch(files.map(x => resolve(projectReport.workingDir, x)), {
     persistent: true
   });
 
