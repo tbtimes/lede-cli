@@ -9,8 +9,9 @@ const spawn = require('cross-spawn');
 
 
 export async function newCommand({workingDir, args, logger}) {
-  let type = args['_'][0];
-  let name = args['_'][1];
+  const type = args['_'][0];
+  const name = args['_'][1];
+  const inline = args["i"] || args["inline"] || false;
 
 
   if (!type || !name) {
@@ -20,7 +21,7 @@ export async function newCommand({workingDir, args, logger}) {
 
   switch (type.toLowerCase()) {
     case 'project':
-      let pathToCreate = resolve(process.cwd(), name);
+      let pathToCreate = inline ? process.cwd() : resolve(process.cwd(), name);
       let subDirs = [
         resolve(pathToCreate, 'images','fullscreen'),
         resolve(pathToCreate, 'images','mugs'),
