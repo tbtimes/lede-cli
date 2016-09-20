@@ -12,6 +12,7 @@ export async function newCommand({workingDir, args, logger}) {
   let type = args['_'][0];
   let name = args['_'][1];
 
+
   if (!type || !name) {
     logger.error(`[type] and [name] are required parameters – you passed ${type} and ${name}`);
     return;

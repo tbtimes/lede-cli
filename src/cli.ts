@@ -12,14 +12,15 @@ let args = minimist(process.argv.slice(2));
 handleCommand(args);
 
 async function handleCommand(args) {
-  let command = args["_"].shift();
-  let logLevel = args['log-level'] || args['l'] || "info";
+  const command = args["_"].shift();
+  const logLevel = args['log-level'] || args['l'] || "info";
+  const path = args["p"] || args["path"] || process.cwd();
 
-  let logger = LoggerFactory({level: logLevel});
+  const logger = LoggerFactory({level: logLevel});
 
-  let config = {
+  const config = {
     gapiKey: process.env.GAPI_KEY,
-    workingDir: await findProjectSettings(process.cwd()),
+    workingDir: await findProjectSettings(path),
     args,
     logger
   };
