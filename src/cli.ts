@@ -1,74 +1,43 @@
-#!/usr/bin/env node
-import { platform } from "os";
-import { resolve, sep } from "path";
-import * as glob from "glob";
 import * as minimist from "minimist";
-import { LoggerFactory } from "./utils";
-import { newCommand, devCommand, imageCommand } from "./commands/commands";
+const sander = require("sander");
+import { homedir } from "os";
+import { join } from "path";
 
-const rootPath = (platform() === "win32") ? process.cwd().split(sep)[0] : "/";
+import { Config } from "./interfaces";
+import { newCommand, devCommand } from "./lib/commands";
+
+
 let args = minimist(process.argv.slice(2));
 
-handleCommand(args);
+handleCommand(args).then(() => {
+  process.exit(0);
+}).catch((e) => {
+  console.log(e);
+  process.exit(1);
+});
 
 async function handleCommand(args) {
   const command = args["_"].shift();
-  const logLevel = args['log-level'] || args['l'] || "info";
-  const path = args["p"] || args["path"] || process.cwd();
-
-  const logger = LoggerFactory({level: logLevel});
-
-  const config = {
-    gapiKey: process.env.GAPI_KEY,
-    workingDir: await findProjectSettings(path),
-    args,
-    logger
-  };
-
-  logger.debug({gapiKey: config.gapiKey, workingDir: config.workingDir});
+  const config: Config = await retrieveConfig();
 
   switch (command) {
-    case 'new':
-      await newCommand(config);
+    case "new":
+      await newCommand(config, args);
       break;
-
-    case 'dev':
-      await devCommand(config);
+    case "dev":
+      await devCommand(config, args);
       break;
-    case 'image':
-    case 'images':
-      await imageCommand(config);
-      break;
-
+    // case "image":
+    // case "images":
+    // case "install":
+    case "build":
     default:
-      console.error(`Command "${command}" not recognized`);
+      console.error(`Command ${command} not recognized`);
       break;
   }
 }
 
-function globProm(pattern, cwd?): Promise<Array<string>> {
-  return new Promise((resolve, reject) => {
-    glob(pattern, {
-      cwd: cwd ? cwd : process.cwd()
-    }, (err, paths) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(paths);
-    });
-  });
-}
-
-async function findProjectSettings(dir: string) {
-  const projectSettingsRegex = /.*?\.projectSettings\.js/;
-  const files = await globProm("*", dir);
-  for (let file of files) {
-    if (projectSettingsRegex.test(file)) {
-      return dir
-    }
-  }
-  if (dir === rootPath) {
-    return "NONE";
-  }
-  return findProjectSettings(resolve(dir, ".."));
+function retrieveConfig(): Config {
+  const Settings = (<any>require(join(homedir(), "ledeConfig", "cli.config.js")).default)
+  return new Settings();
 }

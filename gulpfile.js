@@ -1,7 +1,6 @@
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const watch = require('gulp-watch');
-const srcmap = require('gulp-sourcemaps');
 const path = require('path');
 
 const projectOpts = ts.createProject({
@@ -9,21 +8,19 @@ const projectOpts = ts.createProject({
   module: "commonjs",
   noImplicitAny: false,
   declaration: false,
-  noExternalResolve: true
+  noResolve: true
 });
 
 gulp.task('source', () => {
-  let result = gulp.src(['src/**/*.ts', 'typings/**/*.ts'])
-    .pipe(srcmap.init())
-    .pipe(ts(projectOpts));
+  let result = gulp.src(['src/**/*.ts', 'typings/**/*.ts'], {dot: true})
+    .pipe(projectOpts());
 
   result.js
-    .pipe(srcmap.write({sourceRoot: path.resolve(__dirname, "src")}))
     .pipe(gulp.dest('dist/'))
 });
 
 gulp.task('dev', ['source'], () => {
-  watch('src/**/*.ts', () => {
+  watch('src/**/*.ts', {dot: true}, () => {
     gulp.start('source');
   });
 });
