@@ -9,9 +9,7 @@ import { newCommand, devCommand } from "./lib/commands";
 
 let args = minimist(process.argv.slice(2));
 
-handleCommand(args).then(() => {
-  process.exit(0);
-}).catch((e) => {
+handleCommand(args).catch((e) => {
   console.log(e);
   process.exit(1);
 });

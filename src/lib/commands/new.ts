@@ -30,7 +30,7 @@ export async function newCommand({logger, templates}: Config, args) {
       logger.info("Project directories created, installing dependencies. This may take a minute.");
       try {
         await spawnProm("npm", ["init", "-f"], { cwd: targetDir });
-        await spawnProm("npm", ["install", "lede@next", "slug"], { cwd: targetDir }, true);
+        await spawnProm("npm", ["install", "lede@next", "slug", "--save"], { cwd: targetDir }, true);
       } catch (err) {
         logger.error({err}, "There was an error installing the dependencies for your project, but you may be able to install them manually.");
       }

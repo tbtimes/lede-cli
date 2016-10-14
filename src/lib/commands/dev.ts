@@ -28,7 +28,7 @@ export async function devCommand(config: Config, args) {
   const htmlCompiler = new lede.compilers.NunjucksCompiler(Object.assign({}, config.htmlCompilerArgs));
   const styleCompiler = new lede.compilers.SassCompiler(Object.assign({}, config.styleCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE }));
   const scriptCompiler = new lede.compilers.Es6Compiler(Object.assign({}, config.scriptCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE }));
-  const projectDirector = new lede.ProjectDirector({ workingDir, projectFactory, deployer, logger: config.logger, htmlCompiler, scriptCompiler, styleCompiler });
+  const projectDirector = new lede.ProjectDirector({ workingDir, projectFactory, deployer, logger: config.logger, htmlCompiler, scriptCompiler, styleCompiler, debug: true });
   const fileServer = connect();
   const lrServer = livereload.createServer();
 
@@ -36,6 +36,15 @@ export async function devCommand(config: Config, args) {
   await initWatchers({ projectDirector, logger: config.logger, config });
   fileServer.use(serveStatic(servePath));
   fileServer.listen(port);
+  const livereloadPaths = projectDirector.tree.pages.map(p => {
+    return join(servePath, p.context.$PROJECT.$deployRoot, p.context.$PAGE.$deployPath)
+  });
+  lrServer.watch(livereloadPaths);
+  const tree: { workingDir: string, pages: Array<{context: any}> } = await projectFactory.getProjectModel();
+  config.logger.info(`Project ${tree.pages[0].context.$PROJECT.$name} has finished compiling and is being watched for changes.`);
+  for (let page of tree.pages) {
+    config.logger.info(`Serving ${page.context.$PAGE.$name} at http://localhost:${port}/${page.context.$PROJECT.$deployRoot}/${page.context.$PAGE.$deployPath}`)
+  }
 }
 
 async function initWatchers({ projectDirector, logger, config}) {
@@ -58,13 +67,13 @@ async function createWatcher({pattern, cwd, logger, projectDirector, type}) {
   watcher.on("change", path => {
     logger.info(`Detected change to ${path}`);
     if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
-    return projectDirector.refresh(type).then(Promise.resolve)
+    return projectDirector.refresh(type)
   });
 
   watcher.on("add", path => {
     logger.info(`Detected new file at ${path}`);
     watcher.add(path);
-    return projectDirector.compile().then(Promise.resolve)
+    return projectDirector.compile()
   });
 
   watcher.on("addDir", path => {
@@ -76,14 +85,14 @@ async function createWatcher({pattern, cwd, logger, projectDirector, type}) {
     logger.info(`Detected deleted file at ${path}`);
     if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
     watcher.unwatch(path);
-    return projectDirector.compile().then(Promise.resolve);
+    return projectDirector.compile();
   });
 
   watcher.on("unlinkDir", path => {
     logger.info(`Detected deleted dir at ${path}`);
     if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
     watcher.unwatch(path);
-    return projectDirector.compile().then(Promise.resolve);
+    return projectDirector.compile();
   })
 }
 
