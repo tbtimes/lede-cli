@@ -6,7 +6,7 @@ const glob = require("glob-promise");
 const livereload = require("livereload");
 
 import { Config } from "../../interfaces";
-import { searchForProjectDir } from "../utils";
+import { searchForProjectDir, loadLede } from "../utils";
 
 
 export async function devCommand(config: Config, args) {
@@ -14,13 +14,7 @@ export async function devCommand(config: Config, args) {
   const path = args["p"] || args["path"] || process.cwd();
   const workingDir = await searchForProjectDir(path);
   const servePath = join(workingDir, config.caches.DEPLOY_DIR);
-  let lede;
-  try {
-    lede = require(join(workingDir, "node_modules", "lede", "dist", "index.js"));
-  } catch (err) {
-    config.logger.error({err}, `There was an error loading lede from ${join(workingDir, "node_modules", "lede")}. Make sure you have it locally installed.`);
-    process.exit(1);
-  }
+  const lede = loadLede(workingDir, config.logger);
 
   // Dependency instantiation
   const projectFactory = new lede.ProjectFactory({depCacheDir: config.caches.DEP_CACHE});

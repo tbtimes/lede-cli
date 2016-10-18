@@ -37,7 +37,7 @@ async function installNpmModules() {
     const initer = spawn("npm", ["init", "-f"], { cwd: join(homedir(), "ledeConfig")});
     initer.stderr.pipe(process.stderr);
     initer.on("exit", () => {
-      const installer = spawn("npm", ["install", "bunyan", "bunyan-prettystream", "lede@next", "--save"], { cwd: join(homedir(), "ledeConfig")});
+      const installer = spawn("npm", ["install", "bunyan", "bunyan-pretty-stream", "lede@next", "firebase", "googleapis", "--save"], { cwd: join(homedir(), "ledeConfig")});
       installer.stdout.pipe(process.stdout);
       installer.stderr.pipe(process.stderr);
       installer.on("exit", resolve);
@@ -62,7 +62,7 @@ async function promptUser(): Promise<boolean> {
   console.log(chalk.blue(`It appears you have a file or directory at ${join(homedir(), "ledeConfig")}`));
   console.log(chalk.blue("Lede needs to store configuration in this location."));
   console.log(chalk.blue(`It is possible that you already have Lede configuration stored there, in which case, you probably ${chalk.bold.underline("do NOT")} want to overwrite it.`));
-  console.log(chalk.blue("Please note, however, if you do not have Lede configurations installed there Lede will not work properly."))
+  console.log(chalk.blue("Please note, however, if you do not have Lede configurations installed there Lede will not work properly."));
   console.log(chalk.red(`Would you like to overwrite ${join(homedir(), "ledeConfig")}? (y/${chalk.bold.underline("N")})`));
 
   return new Promise((resolve, reject) => {

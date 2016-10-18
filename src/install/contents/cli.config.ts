@@ -1,26 +1,29 @@
 import { createLogger, Logger, stdSerializers } from "bunyan";
-const pstrm = require("bunyan-prettystream");
+const PrettyStream = require("bunyan-pretty-stream");
+import { readFileSync } from "fs";
 
 import TemplateCreator from "./TemplateCreator";
+import DependencyFetcher from "./DependencyFetcher";
 import { Templater, Config } from "../../interfaces";
 
 
+const DEP_CACHE = "lede_modules";
+const COMPILER_CACHE = ".ledeCache";
+const DEPLOY_DIR = "dist";
+const FIREBASECONFIG = "/Users/emurray/deleteme/firebase.json";
+const GOOGLECONFIG = "/Users/emurray/deleteme/registry_credentials.json";
 const FILTERS = [];
 
 const LOGGER = {
   name: "LEDE",
   streams: [{
     level: "info",
-    stream: new pstrm().pipe(process.stdout)
+    stream: new PrettyStream()
   }],
   serializers: {
     err: stdSerializers["err"]
   }
 };
-
-const DEP_CACHE = "lede_modules";
-const COMPILER_CACHE = ".ledeCache";
-const DEPLOY_DIR = "dist";
 
 export default class SettingsConfig implements Config {
   caches: { DEP_CACHE: string, COMPILER_CACHE: string, DEPLOY_DIR: string };
@@ -36,6 +39,7 @@ export default class SettingsConfig implements Config {
     envOptions?: any,
     loaderPaths?: string[]
   };
+  dependencyFetcher: any;
 
   constructor() {
     this.caches = {
@@ -49,5 +53,7 @@ export default class SettingsConfig implements Config {
     this.scriptCompilerArgs = {};
     this.styleCompilerArgs = {};
     this.htmlCompilerArgs = { filters: FILTERS };
+    this.dependencyFetcher = new DependencyFetcher(JSON.parse(readFileSync(FIREBASECONFIG, "utf8")),
+      JSON.parse(readFileSync(GOOGLECONFIG, "utf8")));
   }
 }

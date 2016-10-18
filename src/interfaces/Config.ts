@@ -1,5 +1,6 @@
 import { Logger } from "bunyan";
-import { Templater } from "../interfaces";
+import { Templater, Fetcher } from "../interfaces";
+
 
 export interface Config {
   caches: {DEP_CACHE: string, COMPILER_CACHE: string, DEPLOY_DIR: string};
@@ -15,4 +16,5 @@ export interface Config {
   };
   scriptCompilerArgs: any;
   styleCompilerArgs: any;
+  dependencyFetcher: Fetcher;
 }
