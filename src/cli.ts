@@ -10,7 +10,7 @@ import { newCommand, devCommand, saveCommand, installCommand, imageCommand } fro
 
 let args = minimist(process.argv.slice(2));
 
-handleCommand(args).catch((e) => {
+handleCommand(args).then(() => process.exit(0)).catch((e) => {
   console.log(chalk.red(`🔥🔥Something is totally bungled you shouldn't have to see this error🔥🔥`));
   console.log(chalk.red(`but here it is anyway`));
   console.log(e);
@@ -19,14 +19,14 @@ handleCommand(args).catch((e) => {
 
 async function handleCommand(args) {
   const command = args["_"].shift();
-  const config: Config = await retrieveConfig();
+  const config: Config = retrieveConfig();
 
   switch (command) {
     case "new":
       await newCommand(config, args);
       break;
     case "dev":
-      await devCommand(config, args);
+      return devCommand(config, args);
       break;
     case "image":
     case "images":
@@ -37,7 +37,14 @@ async function handleCommand(args) {
       break;
     case "save":
       await saveCommand(config, args);
-      process.exit(0);
+      break;
+    case "lm":
+    case "listmodules":
+      const modules = await config.dependencyFetcher.listModules();
+      modules.forEach((x, i) => {
+        const color = i % 2 === 0 ? "green" : "blue";
+        console.log(chalk[color](`${x.id} (${x.versions.sort().join(", ")})`));
+      });
       break;
     case "build":
     default:

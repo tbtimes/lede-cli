@@ -1,22 +1,22 @@
 const firebase = require("firebase");
-const google = require("googleapis");
+import { S3, s3, config } from "aws-sdk";
 
-import { Fetcher } from "../../interfaces";
+import { Fetcher, Manifest } from "../../interfaces";
 
 
 export default class DependencyFetcher implements Fetcher {
   firebase: any;
   database: any;
-  gconf: any;
+  registryBucket: any;
 
-  constructor(firebaseConfig: any, googleConfig: any) {
+  constructor(firebaseConfig: any, awsConfig: any) {
     this.firebase = firebase.initializeApp(firebaseConfig);
     this.database = this.firebase.database();
-    this.gconf = googleConfig;
+    this.registryBucket = awsConfig.Bucket;
+    config.update({ accessKeyId: awsConfig["aws_access_key_id"], secretAccessKey: awsConfig["aws_secret_access_key"], region: awsConfig["region"]});
   };
 
   async save(manifest) {
-    // await this.database.ref("registry").push({ id: "x", version: 5, location: "womp"})
     const registryItems = await this.database.ref("registry").once("value");
     registryItems.forEach(child => {
       const {id, version} = child.val();
@@ -26,43 +26,56 @@ export default class DependencyFetcher implements Fetcher {
       }
     });
     const id = `${manifest.project}.v${manifest.version}`;
-    const driveResult = await this.saveGdoc(id, manifest);
-    await this.database.ref("registry").push({ id: manifest.project, version: manifest.version, location: driveResult.id });
+    const { Bucket, Key } = await this.saveToS3(id, manifest);
+    await this.database.ref("registry").push({ id: manifest.project, version: manifest.version, Bucket, Key });
     return;
   }
 
-  async saveGdoc(id, manifest) {
-    const data = JSON.stringify(manifest);
-    const {client, token} = await this.authenticateGoogle();
-    const drive = google.drive({ version: "v3", auth: client });
-    return await this.writeFileToDrive(drive, id, data);
+  async load({version, name}) {
+    const registryItems = await this.database.ref("registry").once("value");
+    const items = [];
+    registryItems.forEach(child => {
+      items.push(child.val());
+    });
+    const item = items.find(x => x.id === name && x.version === version);
+    return await this.loadFromS3(item);
   }
 
-  writeFileToDrive(drive: any, name: string, data: string) {
+  async listModules() {
+    const registryItems = await this.database.ref("registry").once("value");
+    const items = [];
+    registryItems.forEach(child => {
+      items.push(child.val());
+    });
+    return items.reduce((state, item) => {
+      const index = state.findIndex(x => x.id === item.id);
+      if (index === -1) {
+        state.push({id: item.id, versions: [item.version]});
+        return state;
+      }
+      state[index].versions.push(item.version);
+      return state
+    },[]);
+  }
+
+  async saveToS3(id, manifest) {
+    const s3 = new S3();
     return new Promise((resolve, reject) => {
-      drive.files.create({
-        resource: {
-          name,
-          mimeType: "text/plain"
-        },
-        media: {
-          mimeType: "text/plain",
-          body: data
-        }
-      }, (err, res) => {
+      s3.upload({ Body: JSON.stringify(manifest), Bucket: this.registryBucket, Key: id}, (err, res) => {
         if (err) return reject(err);
         resolve(res);
       })
     });
   }
 
-  authenticateGoogle() {
-    const client = new google.auth.JWT(this.gconf.client_email, null, this.gconf.private_key, ["https://www.googleapis.com/auth/drive"], null);
+  async loadFromS3({ Bucket, Key }): Promise<Manifest> {
+    const s3 = new S3();
     return new Promise((resolve, reject) => {
-      client.authorize((err, token) => {
-        if (err) return reject(err);
-        return resolve({client, token})
-      })
+      s3.getObject({ Bucket, Key })
+        .on("httpDone", x => {
+          resolve(JSON.parse(x.httpResponse.body.toString()));
+        })
+        .send();
     });
   }
 }

@@ -4,14 +4,14 @@ import { readFileSync } from "fs";
 
 import TemplateCreator from "./TemplateCreator";
 import DependencyFetcher from "./DependencyFetcher";
-import { Templater, Config } from "../../interfaces";
+import { Templater, Config, Fetcher } from "../../interfaces";
 
 
 const DEP_CACHE = "lede_modules";
 const COMPILER_CACHE = ".ledeCache";
 const DEPLOY_DIR = "dist";
-const FIREBASECONFIG = "/Users/emurray/deleteme/firebase.json";
-const GOOGLECONFIG = "/Users/emurray/deleteme/registry_credentials.json";
+const FIREBASECONFIG = JSON.parse(readFileSync("/Users/emurray/deleteme/firebase.json", "utf8"));
+const AWSCONFIG = JSON.parse(readFileSync("/Users/emurray/deleteme/aws_config.json", "utf8"));
 const FILTERS = [];
 
 const LOGGER = {
@@ -39,7 +39,7 @@ export default class SettingsConfig implements Config {
     envOptions?: any,
     loaderPaths?: string[]
   };
-  dependencyFetcher: any;
+  dependencyFetcher: Fetcher;
 
   constructor() {
     this.caches = {
@@ -53,7 +53,6 @@ export default class SettingsConfig implements Config {
     this.scriptCompilerArgs = {};
     this.styleCompilerArgs = {};
     this.htmlCompilerArgs = { filters: FILTERS };
-    this.dependencyFetcher = new DependencyFetcher(JSON.parse(readFileSync(FIREBASECONFIG, "utf8")),
-      JSON.parse(readFileSync(GOOGLECONFIG, "utf8")));
+    this.dependencyFetcher = new DependencyFetcher(FIREBASECONFIG, AWSCONFIG);
   }
 }

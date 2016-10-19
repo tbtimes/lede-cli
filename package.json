@@ -43,6 +43,7 @@
     "chokidar": "^1.6.0",
     "connect": "^3.5.0",
     "cross-spawn": "^4.0.2",
+    "eval": "^0.1.1",
     "glob-promise": "^1.0.6",
     "livereload": "^0.5.0",
     "minimist": "^1.2.0",

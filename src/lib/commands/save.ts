@@ -35,7 +35,15 @@ export async function saveCommand(config: Config, args) {
               sander.readFile(bit.style, {encoding: "utf8"}),
               sander.readFile(bit.html, {encoding: "utf8"})
             ])
-              .then(([settings, script, style, html]) => Object.assign({}, bit, { script, style, html }))
+              .then(([settings, script, style, html]) => {
+                const bitDetail = {
+                  settings,
+                  script: { file: basename(bit.script), contents: script },
+                  style: { file: basename(bit.style), contents: style },
+                  html: { file: basename(bit.html), contents: html }
+                };
+                return Object.assign({}, bit, bitDetail)
+              })
               .then(res)
           })
         })
@@ -50,7 +58,7 @@ export async function saveCommand(config: Config, args) {
                html: bit.html
              }
            })
-         })
+         }, {})
        })
        .then(resolve);
     })
@@ -96,7 +104,7 @@ function convertMatToFileDescriptor(mat: { namespace: string, type: string, path
 }
 
 function bitToSettingsString(bit) {
-  const context = bit.context ? `JSON.parse(${JSON.stringify(bit.context)})` : "{}";
+  const context = bit.context ? `JSON.parse("${JSON.stringify(bit.context)}")` : "{}";
   return `
 const join = require("path").join;
 

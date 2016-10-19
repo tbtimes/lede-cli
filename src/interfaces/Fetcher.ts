@@ -22,5 +22,7 @@ export interface Manifest {
 }
 
 export interface Fetcher {
-  save(manifest): void;
+  save(manifest: Manifest): Promise<void>;
+  load({name, version}: {name: string, version: number}): Promise<Manifest>;
+  listModules(): Promise<Array<{id: string, versions: number[]}>>;
 }
