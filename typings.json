@@ -11,6 +11,7 @@
     "chokidar": "registry:dt/chokidar#1.4.3+20160316155526",
     "connect": "registry:dt/connect#3.4.0+20160317120654",
     "node": "registry:dt/node#6.0.0+20160807145350",
+    "node-git": "registry:dt/node-git#0.0.0+20160316155526",
     "tmp": "registry:dt/tmp#0.0.0+20160514170650"
   },
   "globalDevDependencies": {

@@ -32,6 +32,7 @@
     "@types/node": "^6.0.45",
     "@types/rimraf": "0.0.28",
     "@types/serve-static": "^1.7.31",
+    "@types/tmp": "0.0.31",
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.0.2",
     "gulp-watch": "^4.3.10",
@@ -48,9 +49,11 @@
     "glob-promise": "^1.0.6",
     "livereload": "^0.5.0",
     "minimist": "^1.2.0",
+    "nodegit": "^0.16.0",
     "rimraf": "^2.5.4",
     "sander": "^0.5.1",
-    "serve-static": "^1.11.1"
+    "serve-static": "^1.11.1",
+    "tmp": "0.0.29"
   },
   "keywords": []
 }
