@@ -11,7 +11,7 @@ import { Config } from "../../interfaces";
 
 
 export async function configCommand(config, args) {
-  const token = args["t"] || args["token"] || process.env.GH_TOKEN;
+  const token = args["t"] || args["token"] || config.GH_TOKEN || process.env.GH_TOKEN;
   const npmscript = args["npm"];
   const repository = args["_"][0];
 

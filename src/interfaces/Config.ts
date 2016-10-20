@@ -17,4 +17,5 @@ export interface Config {
   scriptCompilerArgs: any;
   styleCompilerArgs: any;
   fetchers: {[name: string]: Fetcher};
+  GH_TOKEN?: string;
 }
