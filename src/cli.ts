@@ -5,7 +5,7 @@ import { join } from "path";
 import * as chalk from "chalk";
 
 import { Config } from "./interfaces";
-import { newCommand, devCommand, saveCommand, installCommand, imageCommand } from "./lib/commands";
+import { newCommand, devCommand, saveCommand, installCommand, imageCommand, lmCommand } from "./lib/commands";
 
 
 let args = minimist(process.argv.slice(2));
@@ -40,11 +40,7 @@ async function handleCommand(args) {
       break;
     case "lm":
     case "listmodules":
-      const modules = await config.dependencyFetcher.listModules();
-      modules.forEach((x, i) => {
-        const color = i % 2 === 0 ? "green" : "blue";
-        console.log(chalk[color](`${x.id} (${x.versions.sort().join(", ")})`));
-      });
+      await lmCommand(config, args);
       break;
     case "build":
     default:

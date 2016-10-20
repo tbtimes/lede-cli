@@ -12,6 +12,8 @@ export async function newCommand({logger, templates}: Config, args) {
   const name = args["_"][1];
   const inline = args["i"] || args["inline"] || false;
   const workingDir = args["p"] || args["path"] || process.cwd();
+  const tname = args["t"] || args["template"] || "default";
+  const TEMPLATER = templates[tname];
   let targetDir;
 
   if (!type || !name) {
@@ -22,7 +24,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "project":
       targetDir = inline ? workingDir : join(workingDir, name);
       try {
-        await templates.newProject({ name, targetDir });
+        await TEMPLATER.newProject({ name, targetDir });
       } catch (err) {
         logger.error({err}, "There was an error creating a new project.");
         process.exit(1);
@@ -41,7 +43,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "bit":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "bits");
-        await templates.newBit({name, targetDir});
+        await TEMPLATER.newBit({name, targetDir});
       } catch (err) {
         logger.error({err}, "There was an error creating a new bit");
         process.exit(1);
@@ -52,7 +54,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "page":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "pages");
-        await templates.newPage({name, targetDir});
+        await TEMPLATER.newPage({name, targetDir});
       } catch (err) {
         logger.error({err}, "There was an error creating a new page");
         process.exit(1);
@@ -63,7 +65,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "block":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "blocks");
-        await templates.newBlock({name, targetDir});
+        await TEMPLATER.newBlock({name, targetDir});
       } catch (err) {
         logger.error({err}, "There was an error creating a new block");
         process.exit(1);

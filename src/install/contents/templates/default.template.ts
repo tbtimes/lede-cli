@@ -2,14 +2,11 @@ import { writeFile, mkdir } from "fs";
 import { join } from "path";
 import { Logger } from "bunyan";
 
-import { Templater, TemplaterArg } from "../../interfaces";
+import { Templater, TemplaterArg } from "../../../interfaces";
 
 
 export default class TemplateCreator implements Templater {
-  constructor(public logger: Logger) {
-    writeFileProm.bind(this);
-    mkdirProm.bind(this);
-  }
+  constructor() {}
 
   newPage({name, targetDir}: TemplaterArg): Promise<void> {
     const data = `

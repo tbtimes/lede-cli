@@ -4,7 +4,7 @@ import { Templater, Fetcher } from "../interfaces";
 
 export interface Config {
   caches: {DEP_CACHE: string, COMPILER_CACHE: string, DEPLOY_DIR: string};
-  templates: Templater;
+  templates: {[name: string]: Templater};
   logger: Logger;
   GAPI_KEY: string;
   htmlCompilerArgs: {
@@ -16,5 +16,5 @@ export interface Config {
   };
   scriptCompilerArgs: any;
   styleCompilerArgs: any;
-  dependencyFetcher: Fetcher;
+  fetchers: {[name: string]: Fetcher};
 }

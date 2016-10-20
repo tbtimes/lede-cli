@@ -1,7 +1,7 @@
 const firebase = require("firebase");
 import { S3, s3, config } from "aws-sdk";
 
-import { Fetcher, Manifest } from "../../interfaces";
+import { Fetcher, Manifest } from "../../../interfaces";
 
 
 export default class DependencyFetcher implements Fetcher {
@@ -9,11 +9,11 @@ export default class DependencyFetcher implements Fetcher {
   database: any;
   registryBucket: any;
 
-  constructor(firebaseConfig: any, awsConfig: any) {
-    this.firebase = firebase.initializeApp(firebaseConfig);
+  constructor({FIREBASECONFIG, AWSCONFIG}) {
+    this.firebase = firebase.initializeApp(FIREBASECONFIG);
     this.database = this.firebase.database();
-    this.registryBucket = awsConfig.Bucket;
-    config.update({ accessKeyId: awsConfig["aws_access_key_id"], secretAccessKey: awsConfig["aws_secret_access_key"], region: awsConfig["region"]});
+    this.registryBucket = AWSCONFIG.Bucket;
+    config.update({ accessKeyId: AWSCONFIG["aws_access_key_id"], secretAccessKey: AWSCONFIG["aws_secret_access_key"], region: AWSCONFIG["region"]});
   };
 
   async save(manifest) {

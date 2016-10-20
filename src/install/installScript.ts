@@ -37,7 +37,7 @@ async function installNpmModules() {
     const initer = spawn("npm", ["init", "-f"], { cwd: join(homedir(), "ledeConfig")});
     initer.stderr.pipe(process.stderr);
     initer.on("exit", () => {
-      const installer = spawn("npm", ["install", "bunyan", "bunyan-pretty-stream", "lede@next", "firebase", "aws-sdk", "--save"], { cwd: join(homedir(), "ledeConfig")});
+      const installer = spawn("npm", ["install", "bunyan", "bunyan-pretty-stream", "lede@next", "firebase", "aws-sdk", "glob", "--save"], { cwd: join(homedir(), "ledeConfig")});
       installer.stdout.pipe(process.stdout);
       installer.stderr.pipe(process.stderr);
       installer.on("exit", resolve);
@@ -54,7 +54,7 @@ async function copyFilesOver() {
       const fromLoc = join(__dirname, "contents", file);
       return sander.copyFile(fromLoc).to(toLoc);
     })
-  );
+  ).catch(e => console.log);
 
 }
 

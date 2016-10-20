@@ -8,6 +8,8 @@ import { searchForProjectDir } from "../utils";
 
 export async function installCommand(config: Config, args) {
   const path = args["p"] || args["path"] || process.cwd();
+  const fname = args["f"] || args["fetcher"] || "default";
+  const FETCHER = config.fetchers[fname];
   let ledeModulesToInstall: string[] = args["_"];
   let addToPackageJson = true;
   const workingDir = await searchForProjectDir(path);
@@ -16,7 +18,7 @@ export async function installCommand(config: Config, args) {
     addToPackageJson = false;
   }
 
-  await Promise.all(ledeModulesToInstall.map(install.bind({ fetcher: config.dependencyFetcher, workingDir: join(workingDir, config.caches.DEP_CACHE) })))
+  await Promise.all(ledeModulesToInstall.map(install.bind({ fetcher: FETCHER, workingDir: join(workingDir, config.caches.DEP_CACHE) })))
 
   if (addToPackageJson) {
     let p = await sander.readFile(join(workingDir, "package.json"), {encoding: "utf8"});

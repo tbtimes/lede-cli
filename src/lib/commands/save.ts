@@ -7,6 +7,8 @@ import { searchForProjectDir, loadLede } from "../utils";
 
 export async function saveCommand(config: Config, args) {
   const path = args["p"] || args["path"] || process.cwd();
+  const fname = args["f"] || args["fetcher"] || "default";
+  const FETCHER = config.fetchers[fname];
   const workingDir = await searchForProjectDir(path);
   const lede = loadLede(workingDir, config.logger);
   const [project, preBits, {scripts: preScripts, styles: preStyles, assets: preAssets}] = await Promise.all([
@@ -86,7 +88,7 @@ export async function saveCommand(config: Config, args) {
   };
 
   try {
-    await config.dependencyFetcher.save(manifest)
+    await FETCHER.save(manifest)
   } catch (err) {
     config.logger.error({err}, `There was an error saving ${project.name} to the registry.`);
     process.exit(1);
