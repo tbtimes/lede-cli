@@ -8,7 +8,7 @@ const sander = require("sander");
 const spawn = require("cross-spawn");
 
 
-install().then(x => x).catch(e => console.log(e));
+install().then(x => console.log(chalk.blue("Lede has finished installing."))).catch(e => console.log(e));
 
 async function install() {
   let promptForOverwrite = false;
@@ -25,11 +25,12 @@ async function install() {
   if (promptForOverwrite) overwrite = await promptUser();
 
   if (overwrite) {
+    console.log(chalk.blue("Installing configurations"));
     await copyFilesOver();
-    await installNpmModules();
+    console.log(chalk.blue("Installing dependencies"));
+    return installNpmModules();
   }
-
-  console.log(chalk.blue("Lede has finished installing."))
+  return Promise.resolve("fin");
 }
 
 async function installNpmModules() {
@@ -69,6 +70,7 @@ async function promptUser(): Promise<boolean> {
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", (d: string) => {
+      console.log(d);
       if (d.length === 1 || d.toLowerCase() === "n\n" || d.toLowerCase() === "no\n") return stopAndReturn(false, resolve);
       if (d.toLowerCase() === "y\n" || d.toLowerCase() === "yes\n") return stopAndReturn(true, resolve);
       console.log(chalk.blue(`${d.slice(0, d.length - 1)} is not a valid answer to the question.`));
