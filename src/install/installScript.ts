@@ -33,16 +33,12 @@ async function install() {
   return Promise.resolve("fin");
 }
 
-async function installNpmModules() {
+function installNpmModules() {
   return new Promise((resolve, reject) => {
-    const initer = spawn("npm", ["init", "-f"], { cwd: join(homedir(), "ledeConfig")});
-    initer.stderr.pipe(process.stderr);
-    initer.on("exit", () => {
-      const installer = spawn("npm", ["install", "bunyan", "bunyan-pretty-stream", "lede@next", "firebase", "aws-sdk", "glob", "--save"], { cwd: join(homedir(), "ledeConfig")});
-      installer.stdout.pipe(process.stdout);
-      installer.stderr.pipe(process.stderr);
-      installer.on("exit", resolve);
-    })
+    const installer = spawn("npm", ["install", "bunyan", "bunyan-pretty-stream", "lede@next", "firebase", "aws-sdk", "glob"], { cwd: join(homedir(), "ledeConfig")});
+    installer.stdout.pipe(process.stdout);
+    installer.stderr.pipe(process.stderr);
+    installer.on("exit", resolve);
   });
 }
 
