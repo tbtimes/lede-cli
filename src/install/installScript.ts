@@ -1,5 +1,6 @@
 import { stat, Stats } from "fs";
 import { homedir, platform } from "os";
+import { chdir } from "process";
 import { join } from "path";
 import * as chalk from "chalk";
 import * as rmrf from "rimraf";
@@ -38,7 +39,7 @@ function installNpmModules() {
     const initer = spawn("npm", ["init", "-f"], { cwd: join(homedir(), "ledeConfig")});
     initer.stderr.pipe(process.stderr);
     initer.on("exit", () => {
-      console.log(join(homedir(), "ledeConfig"));
+      chdir(join(homedir(), "ledeConfig"));
       const installer = spawn("npm", ["install"], { cwd: join(homedir(), "ledeConfig")});
       installer.stdout.pipe(process.stdout);
       installer.stderr.pipe(process.stderr);
