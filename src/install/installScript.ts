@@ -47,6 +47,7 @@ function installNpmModules() {
 async function copyFilesOver() {
   await rmrfProm(join(homedir(), "ledeConfig"));
   const filenames = await glob("**/*", { cwd: join(__dirname, "contents")});
+  console.log(filenames)
   return Promise.all(
     filenames.map(file => {
       const toLoc = join(homedir(), "ledeConfig", file);
