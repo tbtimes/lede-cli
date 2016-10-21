@@ -16,7 +16,9 @@ gulp.task('source', () => {
     .pipe(projectOpts());
 
   result.js
-    .pipe(gulp.dest('dist/'))
+    .pipe(gulp.dest('dist/'));
+
+  gulp.src("src/**/*.json").pipe(gulp.dest("dist/"));
 });
 
 gulp.task('dev', ['source'], () => {
