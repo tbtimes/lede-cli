@@ -1,5 +1,5 @@
 import { stat, Stats } from "fs";
-import { homedir } from "os";
+import { homedir, platform } from "os";
 import { join } from "path";
 import * as chalk from "chalk";
 import * as rmrf from "rimraf";
@@ -66,13 +66,21 @@ async function promptUser(): Promise<boolean> {
   console.log(chalk.blue("Please note, however, if you do not have Lede configurations installed there Lede will not work properly."));
   console.log(chalk.red(`Would you like to overwrite ${join(homedir(), "ledeConfig")}? (y/${chalk.bold.underline("N")})`));
 
+  // Platform dependent line endings silliness
+  let r = "\n";
+  let n = 1;
+  if (platform() === "win32") {
+    r = "\r\n";
+    n = 2;
+  }
+
   return new Promise((resolve, reject) => {
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", (d: string) => {
       console.log(d);
-      if (d.length === 1 || d.toLowerCase() === "n\n" || d.toLowerCase() === "no\n") return stopAndReturn(false, resolve);
-      if (d.toLowerCase() === "y\n" || d.toLowerCase() === "yes\n") return stopAndReturn(true, resolve);
+      if (d.length === n || d.toLowerCase() === `n${r}` || d.toLowerCase() === `no${r}`) return stopAndReturn(false, resolve);
+      if (d.toLowerCase() === `y${r}` || d.toLowerCase() === `yes${r}`) return stopAndReturn(true, resolve);
       console.log(chalk.blue(`${d.slice(0, d.length - 1)} is not a valid answer to the question.`));
     });
     process.stdin.on("error", () => {
