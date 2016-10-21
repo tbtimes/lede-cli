@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as minimist from "minimist";
 const sander = require("sander");
 import { homedir } from "os";

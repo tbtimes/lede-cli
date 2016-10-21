@@ -3,7 +3,9 @@
   "version": "1.2.3",
   "description": "A CLI for lede projects",
   "main": "dist/cli.js",
-  "bin": "node dist/cli.js",
+  "bin": {
+    "lede": "dist/cli.js"
+  },
   "scripts": {
     "prepublishOnly": "gulp source",
     "install": "node dist/install/installScript.js"
