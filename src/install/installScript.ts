@@ -36,15 +36,11 @@ async function install() {
 
 function installNpmModules() {
   return new Promise((resolve, reject) => {
-    const initer = spawn("npm", ["init", "-f"], { cwd: join(homedir(), "ledeConfig")});
-    initer.stderr.pipe(process.stderr);
-    initer.on("exit", () => {
-      chdir(join(homedir(), "ledeConfig"));
-      const installer = spawn("npm", ["install"], { cwd: join(homedir(), "ledeConfig")});
-      installer.stdout.pipe(process.stdout);
-      installer.stderr.pipe(process.stderr);
-      installer.on("exit", resolve);
-    })
+    chdir(join(homedir(), "ledeConfig"));
+    const installer = spawn("npm", ["install"], { cwd: join(homedir(), "ledeConfig")});
+    installer.stdout.pipe(process.stdout);
+    installer.stderr.pipe(process.stderr);
+    installer.on("exit", resolve);
   });
 }
 
