@@ -5,12 +5,11 @@ import { homedir } from "os";
 const sander = require("sander");
 const spawn = require("cross-spawn");
 import * as glob from "glob-promise";
-import * as rmrf from "rimraf";
 
 import { Config } from "../../interfaces";
 
 
-export async function configCommand(config, args) {
+export async function configCommand(config: Config, args) {
   const token = args["t"] || args["token"] || config.GH_TOKEN || process.env.GH_TOKEN;
   const npmscript = args["npm"];
   const repository = args["_"][0];
@@ -65,10 +64,11 @@ export async function configCommand(config, args) {
   }
   config.logger.info("Configs installed; installing dependencies.");
 
+  await npmInstall();
+
   if (npmscript) {
     await runNpmScript(npmscript);
   }
-  await npmInstall();
 }
 
 function npmInstall() {
