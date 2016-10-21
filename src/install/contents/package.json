@@ -1,0 +1,33 @@
+{
+  "name": "lede-config",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ejmurra/tbt-lede-config.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.6.10",
+    "bunyan": "^1.8.3",
+    "bunyan-pretty-stream": "^1.0.1",
+    "firebase": "^3.5.1",
+    "glob": "^7.1.1",
+    "lede": "^1.2.4"
+  },
+  "devDependencies": {
+    "@types/aws-sdk": "0.0.38",
+    "@types/bunyan": "0.0.30",
+    "@types/glob": "^5.0.30",
+    "@types/node": "^6.0.45",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^3.0.2",
+    "gulp-watch": "^4.3.10",
+    "typescript": "^2.0.3"
+  }
+}
