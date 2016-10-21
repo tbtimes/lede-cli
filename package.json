@@ -4,7 +4,7 @@
   "description": "A CLI for lede projects",
   "main": "dist/cli.js",
   "bin": {
-    "lede": "dist/cli.js"
+    "lede": "node dist/cli.js"
   },
   "scripts": {
     "prepublishOnly": "gulp source",
