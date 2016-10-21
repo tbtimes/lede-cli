@@ -78,10 +78,9 @@ async function promptUser(): Promise<boolean> {
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", (d: string) => {
-      console.log(d);
       if (d.length === n || d.toLowerCase() === `n${r}` || d.toLowerCase() === `no${r}`) return stopAndReturn(false, resolve);
       if (d.toLowerCase() === `y${r}` || d.toLowerCase() === `yes${r}`) return stopAndReturn(true, resolve);
-      console.log(chalk.blue(`${d.slice(0, d.length - 1)} is not a valid answer to the question.`));
+      console.log(chalk.blue(`${d.slice(0, d.length - n)} is not a valid answer to the question.`));
     });
     process.stdin.on("error", () => {
       return stopAndReturn(false, resolve);
