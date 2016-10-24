@@ -1,5 +1,6 @@
 const firebase = require("firebase");
 import { S3, s3, config } from "aws-sdk";
+import { createReadStream } from "fs";
 
 import { Fetcher, Manifest } from "../../../interfaces";
 
@@ -76,6 +77,60 @@ export default class DependencyFetcher implements Fetcher {
           resolve(JSON.parse(x.httpResponse.body.toString()));
         })
         .send();
+    });
+  }
+
+  filterImageList({Bucket, logger, paths, Key}): Promise<string[]> {
+    const s3 = new S3();
+    return new Promise((resolve, reject) => {
+      if (!paths) resolve([]);
+      logger.info("Checking s3 for existing images");
+
+      s3.listObjectsV2({Bucket}, (err, data: s3.ListObjectV2Response) => {
+        if (err) return reject(err);
+        const existing = data.Contents.map(x => {
+          if (x.Key.indexOf(Key) > -1) {
+            return  x.Key.split("/")[x.Key.split("/").length -1]
+          }
+          return null;
+        });
+
+        const toPush = paths.filter(x => {
+          const exists = existing.indexOf(x) > -1;
+          if (exists) logger.info(`${x} exists on s3; refusing to upload. To force an upload, run lede image with the --clobber flag`);
+          return !exists;
+        });
+        return resolve(toPush);
+      })
+    })
+  }
+
+  saveImages({Bucket, logger, images}) {
+    return new Promise((resolve, reject) => {
+      let concurrentUploads = [];
+      images.forEach(({Key, path}) => {
+        logger.info(`Uploading ${path} to s3.`);
+        concurrentUploads.push(new Promise((res, rej) => {
+          let upload = new S3.ManagedUpload({
+            params: {
+              Bucket,
+              Key,
+              Body: createReadStream(path),
+              ACL: "bucket-owner-full-control"
+            }
+          });
+          upload.send((err, data) => {
+            logger.debug(data);
+            if (err) {
+              return rej(err);
+            }
+            logger.info(`Successfully uploaded ${path}`);
+            return res();
+          });
+        }));
+      });
+
+      return resolve(Promise.all(concurrentUploads));
     });
   }
 }

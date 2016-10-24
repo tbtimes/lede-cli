@@ -25,4 +25,6 @@ export interface Fetcher {
   save(manifest: Manifest): Promise<void>;
   load({name, version}: {name: string, version: number}): Promise<Manifest>;
   listModules(): Promise<Array<{id: string, versions: number[]}>>;
+  filterImageList({Bucket, logger, paths, Key}): Promise<string[]>;
+  saveImages({Bucket, logger, images}): Promise<any>;
 }
