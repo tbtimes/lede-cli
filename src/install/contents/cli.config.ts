@@ -12,8 +12,8 @@ const COMPILER_CACHE = ".ledeCache";
 const DEPLOY_DIR = "dist";
 const fetcherArgs = {
   "default": {
-    FIREBASECONFIG: JSON.parse(readFileSync("/Users/emurray/deleteme/firebase.json", "utf8")),
-    AWSCONFIG: JSON.parse(readFileSync("/Users/emurray/deleteme/aws_config.json", "utf8"))
+    FIREBASECONFIG: {},
+    AWSCONFIG: {}
   }
 };
 const FILTERS = [];
