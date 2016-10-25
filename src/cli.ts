@@ -11,7 +11,9 @@ import { newCommand, devCommand, saveCommand, installCommand, imageCommand, lmCo
 
 let args = minimist(process.argv.slice(2));
 
-handleCommand(args).then(() => process.exit(0)).catch((e) => {
+handleCommand(args).then(() => {
+  process.exit(0)
+}).catch((e) => {
   console.log(chalk.red(`🔥🔥Something is totally bungled you shouldn't have to see this error🔥🔥`));
   console.log(chalk.red(`but here it is anyway`));
   console.log(e);
@@ -27,7 +29,7 @@ async function handleCommand(args) {
       await newCommand(config, args);
       break;
     case "dev":
-      return devCommand(config, args);
+      await devCommand(config, args);
       break;
     case "image":
     case "images":

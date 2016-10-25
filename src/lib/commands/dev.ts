@@ -39,6 +39,9 @@ export async function devCommand(config: Config, args) {
   for (let page of tree.pages) {
     config.logger.info(`Serving ${page.context.$PAGE.$name} at http://localhost:${port}/${page.context.$PROJECT.$deployRoot}/${page.context.$PAGE.$deployPath}`)
   }
+  return new Promise((resolve, reject) => {
+
+  });
 }
 
 async function initWatchers({ projectDirector, logger, config}) {
