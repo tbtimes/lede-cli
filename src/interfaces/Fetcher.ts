@@ -19,6 +19,7 @@ export interface Manifest {
   scripts: FileDescriptor[];
   styles: FileDescriptor[];
   bits: { [name: string]: BitDescriptor }
+  blocks: FileDescriptor[];
 }
 
 export interface Fetcher {

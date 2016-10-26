@@ -66,6 +66,12 @@ async function install(module) {
             ]).then(res).catch(rej);
         });
       })).then(resolve).catch(reject);
+    }),
+    // blocks
+    new Promise((resolve, reject) => {
+      Promise.all(manifest.blocks.map(block => {
+        return sander.writeFile(join(workingDir, "blocks", block.file), block.contents)
+      })).then(resolve)
     })
   ])
 }

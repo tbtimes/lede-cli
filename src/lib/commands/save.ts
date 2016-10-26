@@ -1,6 +1,7 @@
 import { Config } from "../../interfaces"
 const sander = require("sander");
-import { basename } from "path";
+import { basename, join } from "path";
+import * as glob from "glob-promise";
 
 import { searchForProjectDir, loadLede } from "../utils";
 
@@ -11,13 +12,14 @@ export async function saveCommand(config: Config, args) {
   const FETCHER = config.fetchers[fname];
   const workingDir = await searchForProjectDir(path);
   const lede = loadLede(workingDir, config.logger);
-  const [project, preBits, {scripts: preScripts, styles: preStyles, assets: preAssets}] = await Promise.all([
+  const [project, preBits, {scripts: preScripts, styles: preStyles, assets: preAssets}, preBlocks] = await Promise.all([
     lede.ProjectFactory.getProject(workingDir, config.logger),
     lede.ProjectFactory.getBitsFrom(workingDir, config.logger),
-    lede.ProjectFactory.getLocalMaterials(workingDir, config.logger)
+    lede.ProjectFactory.getLocalMaterials(workingDir, config.logger),
+    glob("*.blockSettings.js", {cwd: join(workingDir, "blocks")})
   ]);
 
-  const [scripts, styles, assets, bits] = await Promise.all([
+  const [scripts, styles, assets, bits, blocks] = await Promise.all([
     new Promise((resolve, reject) => {
       Promise.all(preScripts.map(convertMatToFileDescriptor)).then(resolve);
     }),
@@ -63,6 +65,16 @@ export async function saveCommand(config: Config, args) {
          }, {})
        })
        .then(resolve);
+    }),
+    new Promise((res, rej) => {
+      Promise.all(
+        preBlocks.map(block => sander.readFile(join(workingDir, "blocks", block), {encoding: "utf8"}))
+      ).then(contents => {
+        return preBlocks.reduce((state, path, i) => {
+          state.push({ file: basename(path), contents: contents[i] });
+          return state;
+        }, []);
+      }).then(res);
     })
   ]);
 
@@ -84,7 +96,8 @@ export async function saveCommand(config: Config, args) {
     scripts,
     styles,
     assets,
-    bits
+    bits,
+    blocks
   };
 
   try {

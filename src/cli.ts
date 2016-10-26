@@ -14,8 +14,8 @@ let args = minimist(process.argv.slice(2));
 handleCommand(args).then(() => {
   process.exit(0)
 }).catch((e) => {
-  console.log(chalk.red(`🔥🔥Something is totally bungled you shouldn't have to see this error🔥🔥`));
-  console.log(chalk.red(`but here it is anyway`));
+  // console.log(chalk.red(`🔥🔥Something is totally bungled you shouldn't have to see this error🔥🔥`));
+  // console.log(chalk.red(`but here it is anyway`));
   console.log(e);
   process.exit(1);
 });
