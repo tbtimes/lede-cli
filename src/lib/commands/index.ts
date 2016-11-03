@@ -5,3 +5,4 @@ export * from "./save";
 export * from "./image";
 export * from "./listModules";
 export * from "./config";
+export * from "./build";
