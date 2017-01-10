@@ -15,82 +15,81 @@ export async function devCommand(config: Config, args) {
   const workingDir = await searchForProjectDir(path);
   const servePath = join(workingDir, config.caches.DEPLOY_DIR);
   const lede = loadLede(workingDir, config.logger);
+  const logger = config.logger;
 
   // Dependency instantiation
-  const projectFactory = new lede.ProjectFactory({depCacheDir: config.caches.DEP_CACHE});
-  const deployer = new lede.deployers.FileSystemDeployer({workingDir: servePath});
-  const htmlCompiler = new lede.compilers.NunjucksCompiler(Object.assign({}, config.htmlCompilerArgs));
-  const styleCompiler = new lede.compilers.SassCompiler(Object.assign({}, config.styleCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE }));
-  const scriptCompiler = new lede.compilers.Es6Compiler(Object.assign({}, config.scriptCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE }));
-  const projectDirector = new lede.ProjectDirector({ workingDir, projectFactory, deployer, logger: config.logger, htmlCompiler, scriptCompiler, styleCompiler, debug: true });
+  const deployer = new lede.deployers.FileSystemDeployer({workingDir: servePath, logger});
+  const htmlCompiler = new lede.compilers.NunjucksCompiler(Object.assign({}, config.htmlCompilerArgs, {logger}));
+  const styleCompiler = new lede.compilers.SassCompiler(Object.assign({}, config.styleCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE, logger }));
+  const scriptCompiler = new lede.compilers.Es6Compiler(Object.assign({}, config.scriptCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE, logger }));
+  const projectDirector = new lede.ProjectDirector({ workingDir, depCacheDir: config.caches.DEP_CACHE, deployer, logger, htmlCompiler, scriptCompiler, styleCompiler, debug: true });
   const fileServer = connect();
   const lrServer = livereload.createServer();
 
   await projectDirector.compile();
-  await initWatchers({ projectDirector, logger: config.logger, config });
+
+  await initializeWatchers();
   fileServer.use(serveStatic(servePath));
   fileServer.listen(port);
-  const livereloadPaths = projectDirector.tree.pages.map(p => {
-    return join(servePath, p.context.$PROJECT.$deployRoot, p.context.$PAGE.$deployPath)
+  const livereloadPaths = projectDirector.model.pages.map(p => {
+    return join(servePath, p.context.$PROJECT.$name, p.context.$PAGE.$name);
   });
   lrServer.watch(livereloadPaths);
-  const tree: { workingDir: string, pages: Array<{context: any}> } = await projectFactory.getProjectModel();
-  config.logger.info(`Project ${tree.pages[0].context.$PROJECT.$name} has finished compiling and is being watched for changes.`);
-  for (let page of tree.pages) {
-    config.logger.info(`Serving ${page.context.$PAGE.$name} at http://localhost:${port}/${page.context.$PROJECT.$deployRoot}/${page.context.$PAGE.$deployPath}`)
+  logger.info(`Project ${projectDirector.model.project.name} has finished compiling and is being watched for changes.`);
+  for (let page of projectDirector.model.pages) {
+    logger.info(`Serving ${page.context.$PAGE.$name} at http://localhost:${port}/${page.context.$PROJECT.$name}/${page.context.$PAGE.$name}`);
   }
   return new Promise((resolve, reject) => {
 
   });
 }
 
-async function initWatchers({ projectDirector, logger, config}) {
-  await Promise.all([
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, config.caches.DEP_CACHE), logger, projectDirector, type: "deps"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "scripts"), logger, projectDirector, type: "scripts"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "styles"), logger, projectDirector, type: "styles"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "assets"), logger, projectDirector, type: "assets"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "bits"), logger, projectDirector, type: "bits"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "blocks"), logger, projectDirector, type: "blocks"}),
-    await createWatcher({pattern: "**/*", cwd: join(projectDirector.workingDir, "pages"), logger, projectDirector, type: "pages"}),
-    await createWatcher({pattern: "*.projectSettings.js", cwd: projectDirector.workingDir, logger, projectDirector, type: "projectSettings"})
-  ]);
+async function initializeWatchers({ workingDir, depCacheDir, projectDirector }) {
+  const blocksWatcher = await createWatcher({
+    patterns: [
+      { cwd: join(workingDir, "blocks"), pattern: "**/*.blockSettings.js"},
+      { cwd: join(workingDir, depCacheDir), pattern: "*/blocks/**/*.blockSettings.js"}
+    ]
+  });
+  const pagesWatcher = await createWatcher({
+    patterns: [
+      { cwd: join(workingDir, "pages"), pattern: "**/*.pageSettings.js"}
+    ]
+  });
+  const matsWatcher = await createWatcher({
+    patterns: [
+      { cwd: join(workingDir, "scripts"), pattern: "**/*.js"},
+      { cwd: join(workingDir, depCacheDir), pattern: "*/scripts/**/*.js"},
+      { cwd: join(workingDir, "styles"), pattern: "**/*.scss"},
+      { cwd: join(workingDir, depCacheDir), pattern: "*/styles/**/*.scss"},
+      { cwd: join(workingDir, "assets"), pattern: "**/*.*"},
+      { cwd: join(workingDir, depCacheDir), pattern: "*/assets/**/*.*"},
+    ]
+  });
+  const bitsWatcher = await createWatcher({
+    patterns: [
+      { cwd: join(workingDir, "bits"), pattern: "**/*.*" },
+      { cwd: join(workingDir, depCacheDir), pattern: "*/bits/**/*.*"}
+    ]
+  });
+  const projectSettingsWatcher = await createWatcher({
+    patterns: [
+      { cwd: workingDir, pattern: "*.projectSettings.js" }
+    ]
+  });
+
+  projectDirector.watch({
+    blocks: blocksWatcher,
+    pages: pagesWatcher,
+    materials: matsWatcher,
+    bits: bitsWatcher,
+    project: projectSettingsWatcher
+  })
 }
 
-async function createWatcher({pattern, cwd, logger, projectDirector, type}) {
-  const files = await fullyQualifiedGlob(pattern, cwd);
-  const watcher = watch(files, { persistent: true, awaitWriteFinish: { stabilityThreshold: 500 }, ignoreInitial: true });
-
-  watcher.on("change", path => {
-    logger.info(`Detected change to ${path}`);
-    if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
-    return projectDirector.refresh(type)
-  });
-
-  watcher.on("add", path => {
-    logger.info(`Detected new file at ${path}`);
-    watcher.add(path);
-    return projectDirector.compile()
-  });
-
-  watcher.on("addDir", path => {
-    logger.info(`Detected new dir at ${path}`);
-    watcher.add(path);
-  });
-
-  watcher.on("unlink", path => {
-    logger.info(`Detected deleted file at ${path}`);
-    if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
-    watcher.unwatch(path);
-    return projectDirector.compile();
-  });
-
-  watcher.on("unlinkDir", path => {
-    logger.info(`Detected deleted dir at ${path}`);
-    if (require.cache[require.resolve(path)]) delete require.cache[require.resolve(path)];
-    watcher.unwatch(path);
-    return projectDirector.compile();
-  })
+async function createWatcher({patterns}) {
+  const files = await Promise.all(patterns.map( p => fullyQualifiedGlob(p.pattern, p.cwd)));
+  return watch(files, { persistent: true, awaitWriteFinish: { stabilityThreshold: 500 }, ignoreInitial: true });
 }
 
 async function fullyQualifiedGlob(pattern: string, cwd: string): string[] {
