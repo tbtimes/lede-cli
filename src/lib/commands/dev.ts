@@ -31,7 +31,7 @@ export async function devCommand(config: Config, args) {
   await initializeWatchers({ workingDir, depCacheDir: config.caches.DEP_CACHE, projectDirector});
   fileServer.use(serveStatic(servePath));
   fileServer.listen(port);
-  const livereloadPaths = Promise.all(
+  const livereloadPaths = await Promise.all(
     projectDirector.model.pages.map(p => {
       return projectDirector.model.getPageTree({name: p.name, debug: true });
     })
