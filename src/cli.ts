@@ -62,3 +62,8 @@ function retrieveConfig(): Config {
   const Settings = (<any>require(join(homedir(), "ledeConfig", "cli.config.js")).default);
   return new Settings();
 }
+
+process.on("unhandedRejection", (err) => {
+  new retrieveConfig()().logger.error({err});
+  process.exit(1);
+})
