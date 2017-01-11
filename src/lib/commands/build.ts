@@ -11,21 +11,14 @@ export async function buildCommand(config: Config, args) {
   const lede = loadLede(workingDir, config.logger);
   const deployPath = join(workingDir, config.caches.DEPLOY_DIR);
   const logger = config.logger;
-  await function() {
-    return new Promise((resolve, reject) => {
-      rmrf(deployPath, (err, res) => {
-        if (err) return reject(err);
-        return resolve(res);
-      });
-    });
-  };
+  rmrf.sync(deployPath);
 
   // Dependency instantiation
   const deployer = new lede.deployers.FileSystemDeployer({workingDir: deployPath, logger});
   const htmlCompiler = new lede.compilers.NunjucksCompiler(Object.assign({}, config.htmlCompilerArgs, {logger}));
   const styleCompiler = new lede.compilers.SassCompiler(Object.assign({}, config.styleCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE, logger }));
   const scriptCompiler = new lede.compilers.Es6Compiler(Object.assign({}, config.scriptCompilerArgs, { cacheDir: config.caches.COMPILER_CACHE, logger }));
-  const projectDirector = new lede.ProjectDirector({ workingDir, depCacheDir: config.caches.DEP_CACHE, deployer, logger, htmlCompiler, scriptCompiler, styleCompiler, debug: true });
+  const projectDirector = new lede.ProjectDirector({ workingDir, depCacheDir: config.caches.DEP_CACHE, deployer, logger, htmlCompiler, scriptCompiler, styleCompiler, debug: false });
 
   await projectDirector.compile();
   config.logger.info(`Built project located at ${deployPath}`);
