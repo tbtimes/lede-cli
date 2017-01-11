@@ -56,16 +56,18 @@ async function initializeWatchers({ workingDir, depCacheDir, projectDirector }) 
       { cwd: join(workingDir, "pages"), pattern: "**/*.pageSettings.js"}
     ]
   });
-  const matsWatcher = await createWatcher({
-    patterns: [
-      { cwd: join(workingDir, "scripts"), pattern: "**/*.js"},
-      { cwd: join(workingDir, depCacheDir), pattern: "*/scripts/**/*.js"},
-      { cwd: join(workingDir, "styles"), pattern: "**/*.scss"},
-      { cwd: join(workingDir, depCacheDir), pattern: "*/styles/**/*.scss"},
-      { cwd: join(workingDir, "assets"), pattern: "**/*.*"},
-      { cwd: join(workingDir, depCacheDir), pattern: "*/assets/**/*.*"},
-    ]
-  });
+  const scriptsWatcher = await createWatcher({ patterns: [
+    { cwd: join(workingDir, "scripts"), pattern: "**/*.js"},
+    { cwd: join(workingDir, depCacheDir), pattern: "*/scripts/**/*.js"},
+  ]});
+  const stylesWatcher = await createWatcher({ patterns: [
+    { cwd: join(workingDir, "styles"), pattern: "**/*.scss"},
+    { cwd: join(workingDir, depCacheDir), pattern: "*/styles/**/*.scss"},
+  ]});
+  const assetsWatcher = await createWatcher({ patterns: [
+    { cwd: join(workingDir, "assets"), pattern: "**/*.*"},
+    { cwd: join(workingDir, depCacheDir), pattern: "*/assets/**/*.*"},
+  ]});
   const bitsWatcher = await createWatcher({
     patterns: [
       { cwd: join(workingDir, "bits"), pattern: "**/*.*" },
@@ -81,7 +83,9 @@ async function initializeWatchers({ workingDir, depCacheDir, projectDirector }) 
   projectDirector.watch({
     blocks: blocksWatcher,
     pages: pagesWatcher,
-    materials: matsWatcher,
+    scripts: scriptsWatcher,
+    styles: stylesWatcher,
+    assets: assetsWatcher,
     bits: bitsWatcher,
     project: projectSettingsWatcher
   })
