@@ -1,6 +1,6 @@
 {
   "name": "lede-cli",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "description": "A CLI for lede projects",
   "main": "dist/cli.js",
   "bin": {
