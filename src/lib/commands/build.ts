@@ -11,7 +11,14 @@ export async function buildCommand(config: Config, args) {
   const lede = loadLede(workingDir, config.logger);
   const deployPath = join(workingDir, config.caches.DEPLOY_DIR);
   const logger = config.logger;
-  await rmrf(deployPath);
+  await function() {
+    return new Promise((resolve, reject) => {
+      rmrf(deployPath, (err, res) => {
+        if (err) return reject(err);
+        return resolve(res);
+      });
+    });
+  };
 
   // Dependency instantiation
   const deployer = new lede.deployers.FileSystemDeployer({workingDir: deployPath, logger});
