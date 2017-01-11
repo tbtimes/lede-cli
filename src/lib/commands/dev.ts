@@ -28,7 +28,7 @@ export async function devCommand(config: Config, args) {
 
   await projectDirector.compile();
 
-  await initializeWatchers();
+  await initializeWatchers({ workingDir, depCacheDir: config.caches.DEP_CACHE, projectDirector});
   fileServer.use(serveStatic(servePath));
   fileServer.listen(port);
   const livereloadPaths = projectDirector.model.pages.map(p => {
