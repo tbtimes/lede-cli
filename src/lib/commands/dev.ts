@@ -31,8 +31,12 @@ export async function devCommand(config: Config, args) {
   await initializeWatchers({ workingDir, depCacheDir: config.caches.DEP_CACHE, projectDirector});
   fileServer.use(serveStatic(servePath));
   fileServer.listen(port);
-  const livereloadPaths = projectDirector.model.pages.map(p => {
-    return join(servePath, p.context.$PROJECT.$name, p.context.$PAGE.$name);
+  const livereloadPaths = Promise.all(
+    projectDirector.model.pages.map(p => {
+      return projectDirector.model.getPageTree({name: p.name, debug: true });
+    })
+  ).then(trees => {
+    return trees.map(p => join(servePath, p.context.$PROJECT.$name, p.context.$PAGE.$name));
   });
   lrServer.watch(livereloadPaths);
   logger.info(`Project ${projectDirector.model.project.name} has finished compiling and is being watched for changes.`);
