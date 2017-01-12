@@ -20,10 +20,15 @@ handleCommand(args).then(() => {
   process.exit(1);
 });
 
-const config: Config = retrieveConfig();
 
 async function handleCommand(args) {
   const command = args["_"].shift();
+  const config: Config = retrieveConfig();
+
+  process.on("unhandledRejection", (err) => {
+    console.error(err);
+    process.exit(1);
+  });
 
   switch (command) {
     case "new":
@@ -63,9 +68,3 @@ function retrieveConfig(): Config {
   const Settings = (<any>require(join(homedir(), "ledeConfig", "cli.config.js")).default);
   return new Settings();
 }
-
-process.on("unhandledRejection", (err) => {
-  const config = retrieveConfig();
-  config.logger.error({err});
-  process.exit(1);
-});
