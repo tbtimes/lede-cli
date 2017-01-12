@@ -4,7 +4,7 @@ const sander = require("sander");
 const spawn = require("cross-spawn");
 
 import { Config } from "../../interfaces";
-import { searchForProjectDir } from "../utils";
+import { searchForProjectDir, getProjectName } from "../utils";
 
 
 export async function newCommand({logger, templates}: Config, args) {
@@ -31,8 +31,7 @@ export async function newCommand({logger, templates}: Config, args) {
       }
       logger.info("Project directories created, installing dependencies. This may take a minute.");
       try {
-        await spawnProm("npm", ["init", "-f"], { cwd: targetDir });
-        await spawnProm("npm", ["install", "lede@beta", "--save"], { cwd: targetDir }, true);
+        await spawnProm("npm", ["install"], { cwd: targetDir }, true);
       } catch (err) {
         logger.error({err}, "There was an error installing the dependencies for your project, but you may be able to install them manually.");
       }
@@ -43,7 +42,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "bit":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "bits");
-        await TEMPLATER.newBit({name, targetDir});
+        await TEMPLATER.newBit({name, targetDir, projectName: await getProjectName(await searchForProjectDir(workingDir))});
       } catch (err) {
         logger.error({err}, "There was an error creating a new bit");
         process.exit(1);

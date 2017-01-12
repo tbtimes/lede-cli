@@ -19,3 +19,9 @@ export async function searchForProjectDir(dirToSearch) {
   if (projectFiles.length < 1) return await searchForProjectDir(resolve(dirToSearch, ".."));
   return dirToSearch;
 }
+
+export async function getProjectName(projectDir) {
+  const projectFile = await glob("*.projectSettings.js", { cwd: projectDir });
+  if (!projectFile) throw new Error(`Could not find projectSettings in ${projectDir}`);
+  return projectFile[0].match(new RegExp(`(.*)\.projectSettings\.js`))[1];
+}

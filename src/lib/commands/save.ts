@@ -119,7 +119,7 @@ function convertMatToFileDescriptor(mat: { namespace: string, type: string, path
 }
 
 function bitToSettingsString(bit) {
-  const context = bit.context ? `JSON.parse("${JSON.stringify(bit.context)}")` : "{}";
+  const context = bit.context ? `JSON.parse(\`${JSON.stringify(bit.context)}\`)` : "{}";
   return `
 const join = require("path").join;
 
