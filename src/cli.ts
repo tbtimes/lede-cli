@@ -65,6 +65,7 @@ function retrieveConfig(): Config {
 }
 
 process.on("unhandledRejection", (err) => {
+  const config = retrieveConfig();
   config.logger.error({err});
   process.exit(1);
-})
+});
