@@ -63,7 +63,7 @@ function retrieveConfig(): Config {
   return new Settings();
 }
 
-process.on("unhandedRejection", (err) => {
+process.on("unhandledRejection", (err) => {
   new retrieveConfig()().logger.error({err});
   process.exit(1);
 })
