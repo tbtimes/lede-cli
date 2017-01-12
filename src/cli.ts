@@ -20,9 +20,10 @@ handleCommand(args).then(() => {
   process.exit(1);
 });
 
+const config: Config = retrieveConfig();
+
 async function handleCommand(args) {
   const command = args["_"].shift();
-  const config: Config = retrieveConfig();
 
   switch (command) {
     case "new":
@@ -51,7 +52,7 @@ async function handleCommand(args) {
       break;
     case "build":
       await buildCommand(config, args);
-      break
+      break;
     default:
       console.error(`Command ${command} not recognized`);
       break;
@@ -64,6 +65,6 @@ function retrieveConfig(): Config {
 }
 
 process.on("unhandledRejection", (err) => {
-  new retrieveConfig()().logger.error({err});
+  config.logger.error({err});
   process.exit(1);
 })
