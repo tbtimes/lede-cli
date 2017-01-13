@@ -42,7 +42,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "bit":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "bits");
-        await TEMPLATER.newBit({name, targetDir, projectName: await getProjectName(await searchForProjectDir(workingDir))});
+        await TEMPLATER.newBit({name, targetDir });
       } catch (err) {
         logger.error({err}, "There was an error creating a new bit");
         process.exit(1);
@@ -53,7 +53,7 @@ export async function newCommand({logger, templates}: Config, args) {
     case "page":
       try {
         targetDir = join(await searchForProjectDir(workingDir), "pages");
-        await TEMPLATER.newPage({name, targetDir});
+        await TEMPLATER.newPage({name, targetDir, projectName: await getProjectName(await searchForProjectDir(workingDir))});
       } catch (err) {
         logger.error({err}, "There was an error creating a new page");
         process.exit(1);
