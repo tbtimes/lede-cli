@@ -103,7 +103,7 @@ The `configure` command allows the user to pull in custom configurations from a 
     * `--npm`: A string specifying an [npm script](https://docs.npmjs.com/misc/scripts) to be run after pulling the repo down and installing it's dependencies. Useful if you need to transpile your configurations before they can be used. If not specified, no npm script is run.
 * Examples:
     * `lede config foo/lede-configs` -> installs configurations from the `foo` github user's `lede-configs` repo using the access token specified by `GH_TOKEN` environment variable.
-    
+
 ##### image
 The `image` command allows the user to send images off to be resized/hosted. The actual implementation of the image handling is defined by a fetcher. The default fetcher uses s3 and lambda for storing/resizing images.
 * Syntax: `lede image [options]`
@@ -114,6 +114,13 @@ The `image` command allows the user to send images off to be resized/hosted. The
     * `--path | -p`: A string specifying a path where the command should be run. Defaults to `process.cwd()`.
     * `--clobber | -c`: A boolean specifying if lede should overwrite existing files with the same name.
     * `--bucket | -b`: A bucket name lede should save the images too. Defaults to "ledejs".
+
+##### stage
+The `stage` command pushes your dev code to GitHub Pages. It does make some assumptions:
+* Your lede project is already hosted on a GitHub repo.
+* The name of your remote in git is 'origin'
+* You are *NOT* using the `gh-pages` branch on your repo. This will **NUKE** that branch.
+* You are okay that the pages will be publicly accessible even if your repo is private.
 
 ##### build
 The `build` command builds the project for production and puts the output in the `outDir` specified by the CLI config. By default, this is the directory `dist` in the project root. From here, the project can be pushed up to a file server for hosting.
