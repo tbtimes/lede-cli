@@ -6,7 +6,7 @@ import { join } from "path";
 import * as chalk from "chalk";
 
 import { Config } from "./interfaces";
-import { newCommand, devCommand, saveCommand, installCommand, imageCommand, lmCommand, configCommand, buildCommand } from "./lib/commands";
+import { newCommand, devCommand, saveCommand, installCommand, imageCommand, lmCommand, configCommand, stageCommand, buildCommand } from "./lib/commands";
 
 
 let args = minimist(process.argv.slice(2));
@@ -54,6 +54,9 @@ async function handleCommand(args) {
     case "config":
     case "configure":
       await configCommand(config, args);
+      break;
+    case "stage":
+      await stageCommand(config, args);
       break;
     case "build":
       await buildCommand(config, args);
