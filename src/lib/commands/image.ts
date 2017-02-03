@@ -33,13 +33,13 @@ export async function imageCommand(config: Config, args) {
 
   if (!clobber) {
     try {
-      mugs = await FETCHER.filterImageList({Bucket, paths: mugs, logger: Config.logger, Key: `mugs/${projName}/`});
+      mugs = await FETCHER.filterImageList({Bucket, paths: mugs, logger: config.logger, Key: `mugs/${projName}/`});
     } catch (err) {
       config.logger.error({err}, "An error occurred while checking for existing images on s3.");
     }
 
     try {
-      fullscreens = await FETCHER.filterImageList({Bucket, paths: fullscreens, logger: Config.logger, Key: `fullscreen/${projName}/`});
+      fullscreens = await FETCHER.filterImageList({Bucket, paths: fullscreens, logger: config.logger, Key: `fullscreen/${projName}/`});
     } catch (err) {
       config.logger.error({err}, "An error occurred while checking for existing images on s3.");
     }
