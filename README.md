@@ -26,6 +26,7 @@ The following is a list of commands. The sub-bullets under the command are the o
     * fetcher
     * clobber
     * bucket
+* [stage](#stage)
 * [build](#build)
 
 ##### new
