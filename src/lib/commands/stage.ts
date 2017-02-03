@@ -1,10 +1,11 @@
 import * as glob from "glob-promise";
 import * as Git from "nodegit";
-import * as fs from "fs";
+import { existsSync } from "fs";
+import * as rmrf from "rimraf";
 
 import { resolve, join } from "path"
 import { Config } from "../../interfaces"
-import { searchForProjectDir, deleteFolderRecursive, getProjectName } from "../utils";
+import { searchForProjectDir, getProjectName } from "../utils";
 
 export async function stageCommand(config: Config, args) {
   const logger = config.logger;
@@ -23,9 +24,9 @@ export async function stageCommand(config: Config, args) {
   const projectDirs = await glob(`*/`, {cwd: servePath});
   const servePathGit = servePath + "/.git/";
 
-  if (fs.existsSync(servePathGit)) {
+  if (existsSync(servePathGit)) {
     logger.info("Deleting existing .git directory.")
-    await deleteFolderRecursive(servePathGit);
+    rmrf.sync(servePathGit);
   }
 
   let repo, index, oid;
