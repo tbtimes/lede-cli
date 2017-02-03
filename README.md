@@ -26,7 +26,7 @@ The following is a list of commands. The sub-bullets under the command are the o
     * fetcher
     * clobber
     * bucket
-* build (#build)
+* [build](#build)
 
 ##### new
 The `new` command allows you to quickly scaffold out new pieces for a lede project.
