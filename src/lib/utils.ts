@@ -2,6 +2,7 @@ const glob = require("glob-promise");
 import { parse, resolve, join } from "path";
 import { Logger } from "bunyan";
 import { request, RequestOptions } from "https";
+import * as fs from "fs";
 
 
 export function loadLede(workingDir: string, logger: Logger) {
